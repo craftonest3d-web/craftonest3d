@@ -1,0 +1,840 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import './variables.css';
+
+/* =============================================
+   PaperNest – Global Styles
+   ============================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--pn-font-sans);
+  background-color: var(--pn-bg-paper);
+  color: var(--pn-text-dark);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ─────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f8f9fa; }
+::-webkit-scrollbar-thumb { background: var(--pn-primary-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pn-primary); }
+
+/* ── Typography ────────────────────────── */
+h1, h2, h3, h4, h5, h6,
+.font-serif, .font-sans {
+  font-family: var(--pn-font-sans);
+  color: var(--pn-text-dark);
+  font-weight: 700;
+}
+
+a {
+  color: var(--pn-text-dark);
+  text-decoration: none;
+  transition: color var(--pn-transition-fast);
+}
+a:hover { color: var(--pn-primary); text-decoration: none; }
+
+/* ── Section Titles ────────────────────── */
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--pn-text-dark);
+  line-height: 1.2;
+}
+.section-subtitle {
+  font-size: 0.95rem;
+  color: var(--pn-text-muted);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ── Buttons ───────────────────────────── */
+.btn-pink {
+  background-color: var(--pn-primary);
+  color: white !important;
+  border: none;
+  border-radius: var(--pn-radius-sm);
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--pn-transition-smooth);
+  box-shadow: var(--pn-shadow-pink);
+}
+.btn-pink:hover {
+  background-color: var(--pn-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255, 79, 122, 0.28);
+}
+
+.btn-outline-pink {
+  background-color: transparent;
+  color: var(--pn-primary) !important;
+  border: 2px solid var(--pn-primary);
+  border-radius: var(--pn-radius-sm);
+  padding: 0.55rem 1.4rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--pn-transition-smooth);
+}
+.btn-outline-pink:hover {
+  background-color: var(--pn-primary);
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.btn-all-categories {
+  background-color: var(--pn-primary);
+  color: white !important;
+  border: none;
+  border-radius: var(--pn-radius-sm);
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--pn-transition-smooth);
+}
+.btn-all-categories:hover {
+  background-color: var(--pn-primary-dark);
+}
+
+/* ── Product Card ──────────────────────── */
+.card-custom {
+  background-color: var(--pn-bg-paper);
+  border: 1px solid #f0f1f5;
+  border-radius: var(--pn-radius-md);
+  box-shadow: var(--pn-shadow-xs);
+  transition: all var(--pn-transition-smooth);
+  overflow: hidden;
+}
+.card-custom:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--pn-shadow-md);
+  border-color: rgba(255, 79, 122, 0.12);
+}
+
+/* Image zoom on hover */
+.img-zoom {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+.card-custom:hover .img-zoom { transform: scale(1.06); }
+
+/* ── Badges ────────────────────────────── */
+.card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  text-transform: capitalize;
+  z-index: 2;
+  letter-spacing: 0.2px;
+}
+.badge-new        { background-color: #ff4f7a; color: white; }
+.badge-bestseller { background-color: #ff9f43; color: white; }
+.badge-sale       { background-color: #ee5253; color: white; }
+.badge-featured   { background-color: #6c5ce7; color: white; }
+
+/* ── WhatsApp Order Button ─────────────── */
+.whatsapp-order-btn {
+  background-color: var(--pn-primary);
+  color: white !important;
+  border: none;
+  width: 100%;
+  padding: 0.6rem;
+  font-weight: 600;
+  border-radius: var(--pn-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--pn-transition-fast);
+}
+.whatsapp-order-btn:hover {
+  background-color: var(--pn-primary-dark);
+  transform: translateY(-1px);
+}
+
+/* ── Header Utilities ──────────────────── */
+.header-utility-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--pn-text-dark);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: color var(--pn-transition-fast);
+  gap: 2px;
+}
+.header-utility-link:hover { color: var(--pn-primary); }
+.header-utility-link svg { color: var(--pn-text-dark); }
+.header-utility-link:hover svg { color: var(--pn-primary); }
+
+/* ── Navbar ────────────────────────────── */
+.navbar-custom { background-color: var(--pn-bg-paper) !important; }
+.navbar-custom .nav-link {
+  color: #2f3542 !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.9rem !important;
+  border-radius: 6px;
+  transition: all var(--pn-transition-fast);
+}
+.navbar-custom .nav-link:hover {
+  color: var(--pn-primary) !important;
+  background-color: var(--pn-primary-rgba);
+}
+.navbar-custom .nav-link.active-nav-link {
+  color: var(--pn-primary) !important;
+  background-color: var(--pn-primary-rgba);
+}
+
+/* ── Category Circle ───────────────────── */
+.category-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: var(--pn-primary-bg);
+  color: var(--pn-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--pn-transition-smooth);
+  border: 2px solid transparent;
+}
+.category-circle-wrapper:hover .category-circle {
+  background-color: var(--pn-primary);
+  color: white;
+  transform: translateY(-4px);
+  box-shadow: var(--pn-shadow-pink);
+  border-color: var(--pn-primary);
+}
+.category-circle-wrapper .cat-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--pn-text-dark);
+  transition: color var(--pn-transition-fast);
+  white-space: nowrap;
+}
+.category-circle-wrapper:hover .cat-name { color: var(--pn-primary); }
+
+/* ── Why Choose Section ────────────────── */
+.why-choose-container {
+  border: 1px solid #f0f1f5;
+  border-radius: var(--pn-radius-md);
+  background-color: #ffffff;
+  padding: 2rem 1.5rem;
+  box-shadow: var(--pn-shadow-xs);
+}
+.why-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 1.25rem 1rem;
+  border-radius: var(--pn-radius-sm);
+  transition: all var(--pn-transition-smooth);
+  text-align: center;
+}
+.why-card:hover {
+  background-color: var(--pn-primary-bg);
+  transform: translateY(-3px);
+}
+.why-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--pn-primary-bg);
+  color: var(--pn-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--pn-transition-smooth);
+}
+.why-card:hover .why-icon-wrap {
+  background-color: var(--pn-primary);
+  color: white;
+}
+
+/* ── Promo Banner Cards ─────────────────── */
+.promo-card {
+  border-radius: var(--pn-radius-md);
+  padding: 2rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+  transition: transform var(--pn-transition-smooth);
+}
+.promo-card:hover { transform: translateY(-3px); }
+.promo-card img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--pn-radius-sm);
+  flex-shrink: 0;
+  transition: transform 0.5s ease;
+}
+.promo-card:hover img { transform: scale(1.05); }
+
+/* ── Newsletter ────────────────────────── */
+.newsletter-section {
+  background: linear-gradient(135deg, var(--pn-primary) 0%, var(--pn-primary-dark) 100%);
+}
+.newsletter-input {
+  border: none;
+  outline: none;
+  box-shadow: none !important;
+  border-radius: var(--pn-radius-sm) 0 0 var(--pn-radius-sm) !important;
+  height: 48px;
+  font-size: 0.95rem;
+}
+.newsletter-btn {
+  background-color: var(--pn-text-dark);
+  color: white;
+  border: none;
+  border-radius: 0 var(--pn-radius-sm) var(--pn-radius-sm) 0 !important;
+  height: 48px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: background-color var(--pn-transition-fast);
+}
+.newsletter-btn:hover { background-color: #1a253a; }
+
+/* ── Footer ────────────────────────────── */
+.footer-custom {
+  background-color: #fff0f3 !important;
+  color: var(--pn-text-dark) !important;
+  padding: 4rem 0 2rem;
+}
+.footer-custom h5 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--pn-text-dark);
+  margin-bottom: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.footer-custom a {
+  color: var(--pn-text-muted) !important;
+  font-size: 0.875rem;
+  transition: all var(--pn-transition-fast);
+}
+.footer-custom a:hover {
+  color: var(--pn-primary) !important;
+  padding-left: 4px;
+}
+.footer-contact-info {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: var(--pn-text-muted);
+  font-size: 0.875rem;
+}
+.footer-contact-info li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.footer-contact-info li svg { color: var(--pn-primary); margin-top: 2px; flex-shrink: 0; }
+.social-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: white;
+  color: var(--pn-text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--pn-shadow-xs);
+  transition: all var(--pn-transition-smooth);
+  text-decoration: none !important;
+}
+.social-icon:hover {
+  background-color: var(--pn-primary);
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: var(--pn-shadow-pink);
+}
+
+/* ── Floating WhatsApp ──────────────────── */
+.floating-whatsapp {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background-color: #25D366;
+  color: white;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  z-index: 9999;
+  transition: all var(--pn-transition-smooth);
+}
+.floating-whatsapp:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 8px 28px rgba(37, 211, 102, 0.5);
+  color: white;
+}
+
+/* ── Page Hero Banner ───────────────────── */
+.page-hero {
+  background: linear-gradient(135deg, var(--pn-primary-bg) 0%, #fce4ec 100%);
+  padding: 3.5rem 0;
+}
+
+/* ── Product Filter Pills ───────────────── */
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--pn-transition-fast);
+  border: 1.5px solid #e0e3ea;
+  background: white;
+  color: var(--pn-text-muted);
+  user-select: none;
+}
+.filter-pill:hover {
+  border-color: var(--pn-primary);
+  color: var(--pn-primary);
+}
+.filter-pill.active {
+  background-color: var(--pn-primary);
+  border-color: var(--pn-primary);
+  color: white;
+  box-shadow: var(--pn-shadow-pink);
+}
+
+/* ── About Page ─────────────────────────── */
+.about-stat-card {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: var(--pn-radius-md);
+  background-color: white;
+  box-shadow: var(--pn-shadow-sm);
+  transition: transform var(--pn-transition-smooth);
+}
+.about-stat-card:hover { transform: translateY(-4px); }
+.about-stat-number {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--pn-primary);
+  line-height: 1;
+}
+
+/* ── Contact Page ───────────────────────── */
+.contact-info-card {
+  background: white;
+  border: 1px solid #f0f1f5;
+  border-radius: var(--pn-radius-md);
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: all var(--pn-transition-smooth);
+  box-shadow: var(--pn-shadow-xs);
+}
+.contact-info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--pn-shadow-md);
+  border-color: rgba(255, 79, 122, 0.15);
+}
+.contact-icon-wrap {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 12px;
+  background-color: var(--pn-primary-bg);
+  color: var(--pn-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Form Controls ──────────────────────── */
+.form-control:focus, .form-select:focus {
+  border-color: var(--pn-primary-light);
+  box-shadow: 0 0 0 3px rgba(255, 79, 122, 0.1);
+}
+
+/* ── Animations ─────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Hero Carousel ──────────────────────── */
+.hero-carousel .carousel-indicators button {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--pn-primary-light);
+  border: none;
+  opacity: 0.5;
+  transition: all 0.3s;
+}
+.hero-carousel .carousel-indicators button.active {
+  opacity: 1;
+  background-color: var(--pn-primary);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ── Testimonial Cards ──────────────────── */
+.testimonial-card {
+  background: white;
+  border: 1px solid #f0f1f5;
+  border-radius: var(--pn-radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--pn-shadow-xs);
+  transition: all var(--pn-transition-smooth);
+}
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--pn-shadow-md);
+}
+
+/* =====================================================
+   PaperNest – UI Polish & Animations (v2)
+   Applied globally — no component edits needed
+   ===================================================== */
+
+/* ── Smooth scroll & base motion ─────────────────── */
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Entrance animations ─────────────────────────── */
+@keyframes pnFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pnFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pnScaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pnPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Sections fade up gently on first paint */
+section { animation: pnFadeIn 0.6s ease both; }
+
+/* Product / testimonial / info cards rise in with stagger */
+.card-custom,
+.testimonial-card,
+.contact-info-card,
+.about-stat-card,
+.why-card {
+  animation: pnFadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.g-4 > [class*='col']:nth-child(1) .card-custom { animation-delay: 0.02s; }
+.g-4 > [class*='col']:nth-child(2) .card-custom { animation-delay: 0.06s; }
+.g-4 > [class*='col']:nth-child(3) .card-custom { animation-delay: 0.10s; }
+.g-4 > [class*='col']:nth-child(4) .card-custom { animation-delay: 0.14s; }
+.g-4 > [class*='col']:nth-child(5) .card-custom { animation-delay: 0.18s; }
+.g-4 > [class*='col']:nth-child(6) .card-custom { animation-delay: 0.22s; }
+
+/* ── Enhanced card hover ─────────────────────────── */
+.card-custom {
+  will-change: transform;
+}
+.card-custom:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 16px 40px rgba(255, 79, 122, 0.14) !important;
+}
+
+/* WhatsApp button shimmer on hover */
+.whatsapp-order-btn {
+  position: relative;
+  overflow: hidden;
+}
+.whatsapp-order-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -120%;
+  width: 80%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+.whatsapp-order-btn:hover::after { left: 130%; }
+
+/* ── Buttons: tactile press ──────────────────────── */
+.btn-pink, .btn-outline-pink, .whatsapp-order-btn, .filter-pill, .btn-all-categories {
+  will-change: transform;
+}
+.btn-pink:active,
+.btn-outline-pink:active,
+.whatsapp-order-btn:active,
+.btn-all-categories:active { transform: scale(0.96); }
+
+/* ── Category circles: playful bounce ────────────── */
+.category-circle-wrapper:hover .category-circle {
+  animation: pnPop 0.4s ease;
+}
+
+/* ── Nav links: animated underline ───────────────── */
+.navbar-custom .nav-link {
+  position: relative;
+}
+.navbar-custom .nav-link::after {
+  content: '';
+  position: absolute;
+  left: 50%; bottom: 2px;
+  width: 0; height: 2px;
+  background: var(--pn-primary);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: width 0.25s ease;
+}
+.navbar-custom .nav-link:hover::after,
+.navbar-custom .nav-link.active-nav-link::after { width: 60%; }
+
+/* ── Floating WhatsApp: gentle pulse ─────────────── */
+@keyframes pnPulse {
+  0%   { box-shadow: 0 4px 20px rgba(37,211,102,0.40), 0 0 0 0 rgba(37,211,102,0.45); }
+  70%  { box-shadow: 0 4px 20px rgba(37,211,102,0.40), 0 0 0 14px rgba(37,211,102,0); }
+  100% { box-shadow: 0 4px 20px rgba(37,211,102,0.40), 0 0 0 0 rgba(37,211,102,0); }
+}
+.floating-whatsapp { animation: pnPulse 2.4s infinite; }
+.floating-whatsapp:hover { animation-play-state: paused; }
+
+/* ── Badges: subtle attention ────────────────────── */
+.card-badge { animation: pnScaleIn 0.4s ease both; }
+
+/* ── Images: graceful load fade ──────────────────── */
+.card-custom img, .promo-card img {
+  background: linear-gradient(110deg, #f5f6f8 8%, #eef0f3 18%, #f5f6f8 33%);
+  background-size: 200% 100%;
+}
+
+/* ── Form controls: smooth focus ─────────────────── */
+.form-control, .form-select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ── Links in footer: arrow nudge already exists ─── */
+
+/* ── Hero text entrance ──────────────────────────── */
+.hero-carousel .carousel-item.active h1 { animation: pnFadeUp 0.6s ease both; }
+.hero-carousel .carousel-item.active p  { animation: pnFadeUp 0.7s ease both; }
+.hero-carousel .carousel-item.active .btn { animation: pnFadeUp 0.8s ease both; }
+
+/* ── Skeleton shimmer (loading placeholders) ─────── */
+@keyframes pnShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.card-custom > div[style*='f5f6f8'],
+.card-custom > div[style*='f0f1f5'] {
+  background: linear-gradient(110deg, #eceef1 8%, #f5f6f8 18%, #eceef1 33%) !important;
+  background-size: 200% 100% !important;
+  animation: pnShimmer 1.4s linear infinite;
+}
+
+/* ── Section titles: accent underline ────────────── */
+.section-title {
+  position: relative;
+  display: inline-block;
+}
+
+/* ── Promo cards: lift + glow ────────────────────── */
+.promo-card { will-change: transform; }
+.promo-card:hover {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Filter pills: smooth toggle ─────────────────── */
+.filter-pill { will-change: transform; }
+.filter-pill.active { animation: pnPop 0.3s ease; }
+
+/* ── Social icons in footer already animate ──────── */
+
+/* ── Newsletter button: hover grow ──────────────── */
+.newsletter-btn { transition: background-color 0.2s ease, transform 0.15s ease; }
+.newsletter-btn:hover { transform: translateY(-1px); }
+
+/* ── Smooth page section reveal on scroll
+   (CSS-only via animation-timeline where supported) ── */
+@supports (animation-timeline: view()) {
+  .card-custom,
+  .testimonial-card,
+  .why-card,
+  .about-stat-card {
+    animation: pnFadeUp 0.6s ease both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+
+/* =====================================================
+   PaperNest – Admin Panel Polish & Animations
+   Targets admin pages via their structural classes
+   ===================================================== */
+
+/* ── Admin stat / panel cards rise in ────────────── */
+.bg-white.rounded-4 {
+  animation: pnFadeUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Stagger the 4 dashboard stat cards */
+.g-3 > [class*='col']:nth-child(1) .bg-white.rounded-4 { animation-delay: 0.03s; }
+.g-3 > [class*='col']:nth-child(2) .bg-white.rounded-4 { animation-delay: 0.08s; }
+.g-3 > [class*='col']:nth-child(3) .bg-white.rounded-4 { animation-delay: 0.13s; }
+.g-3 > [class*='col']:nth-child(4) .bg-white.rounded-4 { animation-delay: 0.18s; }
+
+/* ── Stat cards: lift on hover ───────────────────── */
+.bg-white.rounded-4 {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.bg-white.rounded-4:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--pn-shadow-md);
+}
+
+/* ── Admin table rows: smooth hover highlight ────── */
+.table tbody tr {
+  transition: background-color 0.18s ease;
+}
+.table tbody tr:hover {
+  background-color: var(--pn-primary-bg) !important;
+}
+
+/* Table action buttons grow slightly */
+.table .btn-sm {
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.table .btn-sm:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.96);
+}
+
+/* ── Sidebar nav links: slide accent ─────────────── */
+aside nav a {
+  position: relative;
+  transition: background-color 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+aside nav a:hover {
+  padding-left: 1.1rem !important;
+}
+
+/* ── Quick-action cards: arrow nudge ─────────────── */
+a[class*='rounded-3'][style*='border'] {
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* ── Login card entrance ─────────────────────────── */
+.min-vh-100 > .bg-white.rounded-4 {
+  animation: pnScaleIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Modal smooth entrance (categories add/edit) ─── */
+.modal.show .modal-dialog {
+  animation: pnScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Toggle switches already animate inline ──────── */
+
+/* ── Seed banner: gentle attention pulse ─────────── */
+@keyframes pnGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+  50%      { box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.12); }
+}
+[style*='fff8e1'][class*='rounded-4'] {
+  animation: pnFadeUp 0.4s ease both, pnGlow 2.5s ease-in-out infinite 0.5s;
+}
+
+/* ── Spinners inherit brand colour smoothly ──────── */
+.spinner-border { transition: color 0.2s ease; }
+
+/* ── Image previews in product form fade in ──────── */
+.rounded-3.overflow-hidden img,
+.rounded-4.overflow-hidden img {
+  animation: pnFadeIn 0.4s ease both;
+}
+
+/* ── Form sections in product form rise in ───────── */
+.bg-white.rounded-4.p-4 {
+  animation: pnFadeUp 0.4s ease both;
+}
+
+/* ── Badge pills (stock/featured) smooth ─────────── */
+span[class*='rounded-pill'] {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Save / submit buttons: tactile ──────────────── */
+button[type='submit'] {
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+button[type='submit']:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* ── Typewriter logo cursor ──────────────────────── */
+@keyframes pnBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.pn-cursor {
+  display: inline-block;
+  font-weight: 300;
+  color: var(--pn-primary);
+  animation: pnBlink 0.75s step-end infinite;
+  margin-left: 1px;
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+.pn-typewriter {
+  will-change: contents;
+}

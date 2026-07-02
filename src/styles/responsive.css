@@ -1,0 +1,57 @@
+/* ===================================================
+   PaperNest – Responsive Adjustments
+   =================================================== */
+
+/* ── Large Tablets / Small Desktops ── */
+@media (max-width: 1199.98px) {
+  .section-title { font-size: 1.6rem; }
+}
+
+/* ── Tablets ─────────────────────────────────────── */
+@media (max-width: 991.98px) {
+  .footer-custom { padding: 3rem 0 1.5rem; }
+
+  .navbar-custom .navbar-collapse {
+    background-color: var(--pn-bg-paper);
+    padding: 1rem;
+    border-radius: var(--pn-radius-md);
+    margin-top: 0.5rem;
+    box-shadow: var(--pn-shadow-md);
+  }
+
+  .promo-card { flex-direction: column; align-items: flex-start; }
+  .promo-card img { display: none; }
+}
+
+/* ── Large Phones ────────────────────────────────── */
+@media (max-width: 767.98px) {
+  h1, .display-4 { font-size: 2rem !important; }
+  h2, .section-title { font-size: 1.5rem !important; }
+  h3 { font-size: 1.25rem !important; }
+
+  .page-hero { padding: 2.5rem 0; }
+
+  .floating-whatsapp {
+    width: 48px;
+    height: 48px;
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .about-stat-number { font-size: 1.75rem; }
+}
+
+/* ── Small Phones ────────────────────────────────── */
+@media (max-width: 575.98px) {
+  h1, .display-4 { font-size: 1.7rem !important; }
+  h2, .section-title { font-size: 1.3rem !important; }
+
+  .newsletter-section .d-flex { flex-direction: column; }
+  .newsletter-input { border-radius: var(--pn-radius-sm) !important; }
+  .newsletter-btn { border-radius: var(--pn-radius-sm) !important; height: 44px; }
+
+  .category-circle { width: 60px; height: 60px; }
+  .cat-name { font-size: '0.72rem'; }
+
+  .filter-pill { font-size: 0.8rem; padding: 0.35rem 0.85rem; }
+}

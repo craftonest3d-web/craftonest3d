@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── PRODUCTS ─────────────────────────────────────────────────────────
+    // Public: read all products (website store)
+    // Write: authenticated admin only
+    match /products/{docId} {
+      allow read:   if true;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['title', 'price', 'category'])
+                    && request.resource.data.price is number
+                    && request.resource.data.price >= 0;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // ── CATEGORIES ───────────────────────────────────────────────────────
+    match /categories/{docId} {
+      allow read:   if true;
+      allow write:  if request.auth != null;
+    }
+
+    // ── SETTINGS ─────────────────────────────────────────────────────────
+    match /settings/{docId} {
+      allow read:   if true;
+      allow write:  if request.auth != null;
+    }
+
+    // ── DENY EVERYTHING ELSE ─────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
