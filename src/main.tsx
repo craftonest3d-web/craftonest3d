@@ -63,7 +63,11 @@ VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX</pre>
   // Config looks good — mount the app.
   // NOTE: seeding is now manual via Admin Dashboard "Load Sample Data" button
   // to prevent accidental duplicates on every reload.
-  createRoot(document.getElementById('root')!).render(
+// Apply saved theme before render
+const savedTheme = localStorage.getItem('pn-theme') ?? 'pink';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <AuthProvider>
         <CartProvider>

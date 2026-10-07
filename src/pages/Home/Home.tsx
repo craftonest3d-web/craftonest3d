@@ -11,9 +11,9 @@ import {
   FiHeart, FiMail, FiPackage, FiSend, FiShoppingCart,
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
-import type { Product } from '../../types';
+import type { Product, SiteSettings } from '../../types';
 import { getFeaturedProducts, buildWhatsAppOrderUrl } from '../../services/productService';
-import { DEFAULT_SETTINGS } from '../../services/settingsService';
+import { DEFAULT_SETTINGS, getSiteSettings } from '../../services/settingsService';
 import { useCart } from '../../contexts/CartContext';
 
 const WA_NUMBER = DEFAULT_SETTINGS.whatsappNumber;
@@ -140,20 +140,25 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 
 // ── Home Component ─────────────────────────────────────────────────────────
 export const Home: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [products,  setProducts]  = useState<Product[]>([]);
+  const [settings,  setSettings]  = useState<SiteSettings>(DEFAULT_SETTINGS);
+  const [email,     setEmail]     = useState('');
+  const [subscribed,setSubscribed] = useState(false);
 
   useEffect(() => {
     getFeaturedProducts().then(setProducts);
+    getSiteSettings().then(setSettings);
   }, []);
+
+  const WA = settings.whatsappNumber;
+  const h0 = settings.heroSlides?.[0] ?? DEFAULT_SETTINGS.heroSlides[0];
+  const h1 = settings.heroSlides?.[1] ?? DEFAULT_SETTINGS.heroSlides[1];
+  const p0 = settings.promoBanners?.[0] ?? DEFAULT_SETTINGS.promoBanners[0];
+  const p1 = settings.promoBanners?.[1] ?? DEFAULT_SETTINGS.promoBanners[1];
 
   const handleSubscribe = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
-      setEmail('');
-    }
+    if (email.trim()) { setSubscribed(true); setEmail(''); }
   }, [email]);
 
   return (
@@ -161,55 +166,38 @@ export const Home: React.FC = () => {
 
       {/* ── 1. Hero Carousel ──────────────────────────────── */}
       <section aria-label="Featured promotions">
-        <Carousel
-          fade
-          indicators
-          controls={false}
-          className="hero-carousel"
-          style={{ backgroundColor: 'var(--pn-primary-bg)' }}
-        >
+        <Carousel fade indicators controls={false} className="hero-carousel">
           {/* Slide 1 */}
           <Carousel.Item>
-            <div style={{ backgroundColor: 'var(--pn-primary-bg)', minHeight: 440 }} className="d-flex align-items-center">
+            <div style={{ backgroundColor: h0.bgColor || 'var(--pn-primary-bg)', minHeight: 440 }} className="d-flex align-items-center">
               <Container className="py-5">
                 <Row className="align-items-center gy-4">
                   <Col md={6} className="animate-fade-up">
-                    <Badge
-                      className="mb-3 px-3 py-2"
-                      style={{ backgroundColor: '#ffe0e9', color: 'var(--pn-primary)', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}
-                    >
-                      ✨ Premium Stationery Store
+                    <Badge className="mb-3 px-3 py-2"
+                      style={{ backgroundColor: '#ffe0e9', color: 'var(--pn-primary)', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>
+                      {h0.badge}
                     </Badge>
                     <h1 className="display-4 fw-bold mb-3" style={{ color: 'var(--pn-secondary)', lineHeight: 1.15 }}>
-                      Your One Stop Shop For{' '}
-                      <span style={{ color: 'var(--pn-primary)' }}>Stationery &amp; Gifts</span>
+                      {h0.heading}{' '}
+                      <span style={{ color: 'var(--pn-primary)' }}>{h0.headingHighlight}</span>
                     </h1>
                     <p className="lead text-muted mb-4 fs-6" style={{ maxWidth: 480, lineHeight: 1.7 }}>
-                      Explore premium stationery, personalized gifts, stickers, photo prints and much more.
-                      Order easily on WhatsApp!
+                      {h0.subtext}
                     </p>
                     <div className="d-flex gap-3 flex-wrap">
-                      <Link to="/products" className="btn btn-pink">
-                        Shop Now <FiChevronRight size={16} />
+                      <Link to={h0.buttonLink || '/products'} className="btn btn-pink">
+                        {h0.buttonText} <FiChevronRight size={16} />
                       </Link>
-                      <a
-                        href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hi! I want to explore your products.')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-outline-pink"
-                      >
+                      <a href={`https://wa.me/${WA}?text=${encodeURIComponent('Hi! I want to explore your products.')}`}
+                        target="_blank" rel="noopener noreferrer" className="btn btn-outline-pink">
                         <FaWhatsapp size={16} /> Chat with Us
                       </a>
                     </div>
                   </Col>
                   <Col md={6} className="text-center">
-                    <img
-                      src="https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop"
-                      alt="Premium stationery collection"
+                    <img src={h0.image} alt="Hero"
                       className="img-fluid rounded-4 shadow"
-                      style={{ maxHeight: 360, objectFit: 'cover', width: '90%' }}
-                      loading="eager"
-                    />
+                      style={{ maxHeight: 360, objectFit: 'cover', width: '90%' }} loading="eager" />
                   </Col>
                 </Row>
               </Container>
@@ -218,35 +206,29 @@ export const Home: React.FC = () => {
 
           {/* Slide 2 */}
           <Carousel.Item>
-            <div style={{ backgroundColor: '#e8f4ff', minHeight: 440 }} className="d-flex align-items-center">
+            <div style={{ backgroundColor: h1.bgColor || '#e8f4ff', minHeight: 440 }} className="d-flex align-items-center">
               <Container className="py-5">
                 <Row className="align-items-center gy-4">
                   <Col md={6}>
-                    <Badge
-                      className="mb-3 px-3 py-2"
-                      style={{ backgroundColor: '#ddeeff', color: '#0062cc', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}
-                    >
-                      🎁 Personalized Gifts
+                    <Badge className="mb-3 px-3 py-2"
+                      style={{ backgroundColor: '#ddeeff', color: '#0062cc', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>
+                      {h1.badge}
                     </Badge>
                     <h1 className="display-4 fw-bold mb-3" style={{ color: 'var(--pn-secondary)', lineHeight: 1.15 }}>
-                      Make Every Moment{' '}
-                      <span style={{ color: 'var(--pn-primary)' }}>Extra Special</span>
+                      {h1.heading}{' '}
+                      <span style={{ color: 'var(--pn-primary)' }}>{h1.headingHighlight}</span>
                     </h1>
                     <p className="lead text-muted mb-4 fs-6" style={{ maxWidth: 480, lineHeight: 1.7 }}>
-                      Custom mugs, photo frames, keychains and more. Personalized gifts for every occasion.
+                      {h1.subtext}
                     </p>
-                    <Link to="/products?category=gifts" className="btn btn-pink">
-                      Explore Gifts <FiChevronRight size={16} />
+                    <Link to={h1.buttonLink || '/products?category=gifts'} className="btn btn-pink">
+                      {h1.buttonText} <FiChevronRight size={16} />
                     </Link>
                   </Col>
                   <Col md={6} className="text-center">
-                    <img
-                      src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop"
-                      alt="Personalized gifts collection"
+                    <img src={h1.image} alt="Hero slide 2"
                       className="img-fluid rounded-4 shadow"
-                      style={{ maxHeight: 360, objectFit: 'cover', width: '90%' }}
-                      loading="lazy"
-                    />
+                      style={{ maxHeight: 360, objectFit: 'cover', width: '90%' }} loading="lazy" />
                   </Col>
                 </Row>
               </Container>
@@ -259,16 +241,11 @@ export const Home: React.FC = () => {
       <section className="py-5 bg-white" aria-label="Product categories">
         <Container>
           <div className="text-center mb-4">
-            <h2 className="section-title">Browse by Category</h2>
-            <p className="section-subtitle mt-2">
-              Find exactly what you're looking for across our curated collections.
-            </p>
+            <h2 className="section-title">{settings.categoriesTitle}</h2>
+            <p className="section-subtitle mt-2">{settings.categoriesSubtext}</p>
           </div>
           <div className="d-flex align-items-center gap-2">
-            <div
-              className="d-flex gap-4 overflow-hidden w-100 px-2 justify-content-center flex-wrap"
-              role="list"
-            >
+            <div className="d-flex gap-4 overflow-hidden w-100 px-2 justify-content-center flex-wrap" role="list">
               {CATEGORIES.map((cat, i) => (
                 <div key={i} role="listitem">
                   <Link
@@ -332,53 +309,33 @@ export const Home: React.FC = () => {
         <Container>
           <Row className="g-4">
             <Col md={6}>
-              <div
-                className="promo-card"
-                style={{ backgroundColor: 'var(--pn-primary-bg)' }}
-              >
+              <div className="promo-card" style={{ backgroundColor: p0.bgColor || 'var(--pn-primary-bg)' }}>
                 <div>
                   <Badge className="mb-2 px-3 py-2" style={{ backgroundColor: '#ffe0e9', color: 'var(--pn-primary)', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-                    Best Sellers
+                    {p0.badge}
                   </Badge>
-                  <h3 className="fw-bold mb-2" style={{ fontSize: '1.4rem' }}>Personalized Gifts</h3>
-                  <p className="text-muted mb-4" style={{ maxWidth: 220, fontSize: '0.875rem', lineHeight: 1.6 }}>
-                    Make every moment special with customized gifts for your loved ones.
-                  </p>
-                  <Link to="/products?category=gifts" className="btn btn-pink">
-                    Explore Now <FiChevronRight size={15} />
+                  <h3 className="fw-bold mb-2" style={{ fontSize: '1.4rem' }}>{p0.heading}</h3>
+                  <p className="text-muted mb-4" style={{ maxWidth: 220, fontSize: '0.875rem', lineHeight: 1.6 }}>{p0.subtext}</p>
+                  <Link to={p0.buttonLink || '/products'} className="btn btn-pink">
+                    {p0.buttonText} <FiChevronRight size={15} />
                   </Link>
                 </div>
-                <img
-                  src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop"
-                  alt="Personalized gifts"
-                  className="d-none d-sm-block"
-                  loading="lazy"
-                />
+                <img src={p0.image} alt={p0.heading} className="d-none d-sm-block" loading="lazy" />
               </div>
             </Col>
             <Col md={6}>
-              <div
-                className="promo-card"
-                style={{ backgroundColor: '#eef4ff' }}
-              >
+              <div className="promo-card" style={{ backgroundColor: p1.bgColor || '#eef4ff' }}>
                 <div>
                   <Badge className="mb-2 px-3 py-2" style={{ backgroundColor: '#ddeeff', color: '#0062cc', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-                    New Collection
+                    {p1.badge}
                   </Badge>
-                  <h3 className="fw-bold mb-2" style={{ fontSize: '1.4rem' }}>Stickers &amp; Prints</h3>
-                  <p className="text-muted mb-4" style={{ maxWidth: 220, fontSize: '0.875rem', lineHeight: 1.6 }}>
-                    High-quality waterproof stickers and vivid photo prints for every style.
-                  </p>
-                  <Link to="/products?category=stickers" className="btn btn-pink">
-                    Explore Now <FiChevronRight size={15} />
+                  <h3 className="fw-bold mb-2" style={{ fontSize: '1.4rem' }}>{p1.heading}</h3>
+                  <p className="text-muted mb-4" style={{ maxWidth: 220, fontSize: '0.875rem', lineHeight: 1.6 }}>{p1.subtext}</p>
+                  <Link to={p1.buttonLink || '/products'} className="btn btn-pink">
+                    {p1.buttonText} <FiChevronRight size={15} />
                   </Link>
                 </div>
-                <img
-                  src="https://images.unsplash.com/photo-1572375995501-4b0894dbe0d1?q=80&w=300&auto=format&fit=crop"
-                  alt="Sticker collection"
-                  className="d-none d-sm-block"
-                  loading="lazy"
-                />
+                <img src={p1.image} alt={p1.heading} className="d-none d-sm-block" loading="lazy" />
               </div>
             </Col>
           </Row>
@@ -389,10 +346,8 @@ export const Home: React.FC = () => {
       <section className="py-5" style={{ backgroundColor: 'var(--pn-bg-section)' }} aria-label="Why choose PaperNest">
         <Container>
           <div className="text-center mb-5">
-            <h2 className="section-title">Why Choose PaperNest?</h2>
-            <p className="section-subtitle mt-2">
-              We go the extra mile to make your stationery and gifting experience truly special.
-            </p>
+            <h2 className="section-title">{settings.whyTitle}</h2>
+            <p className="section-subtitle mt-2">{settings.whySubtext}</p>
           </div>
           <div className="why-choose-container">
             <Row className="g-3">
@@ -454,11 +409,10 @@ export const Home: React.FC = () => {
             <Col lg={7} className="text-center text-white">
               <FiMail size={36} className="mb-3 opacity-75" />
               <h2 className="fw-bold mb-2" style={{ fontSize: '1.75rem' }}>
-                Get Exclusive Deals in Your Inbox
+                {settings.newsletterTitle}
               </h2>
               <p className="mb-4 opacity-75" style={{ fontSize: '0.95rem', lineHeight: 1.7 }}>
-                Subscribe to receive special offers, new product launches and gift inspirations.
-                Join 10,000+ happy subscribers!
+                {settings.newsletterSubtext}
               </p>
               {subscribed ? (
                 <div
@@ -493,7 +447,7 @@ export const Home: React.FC = () => {
 
       {/* ── Floating WhatsApp ──────────────────────────────── */}
       <a
-        href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hi! I want to know more about your products.')}`}
+        href={`https://wa.me/${WA}?text=${encodeURIComponent('Hi! I want to know more about your products.')}`}
         target="_blank"
         rel="noopener noreferrer"
         className="floating-whatsapp"

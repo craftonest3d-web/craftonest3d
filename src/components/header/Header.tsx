@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Navbar, Nav, Container, Form, InputGroup, Button } from 'react-bootstrap';
+import { Navbar, Nav, Container, Row, Col, Form, InputGroup, Button } from 'react-bootstrap';
 import { FiSearch, FiGrid, FiChevronDown, FiMenu, FiShoppingCart } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookF, FaInstagram, FaYoutube } from 'react-icons/fa';
 import { useSiteSettings } from '../../hooks/useSiteSettings';

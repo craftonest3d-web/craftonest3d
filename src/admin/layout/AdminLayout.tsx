@@ -8,14 +8,15 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FiGrid, FiPackage, FiTag, FiSettings, FiLogOut,
-  FiMenu, FiX, FiExternalLink,
+  FiMenu, FiX, FiExternalLink, FiEdit,
 } from 'react-icons/fi';
 
 const NAV_ITEMS = [
-  { to: '/admin/dashboard',   icon: <FiGrid size={18} />,    label: 'Dashboard' },
-  { to: '/admin/products',    icon: <FiPackage size={18} />, label: 'Products' },
-  { to: '/admin/categories',  icon: <FiTag size={18} />,     label: 'Categories' },
-  { to: '/admin/settings',    icon: <FiSettings size={18} />,label: 'Settings' },
+  { to: '/admin/dashboard',  icon: <FiGrid size={18} />,    label: 'Dashboard' },
+  { to: '/admin/products',   icon: <FiPackage size={18} />, label: 'Products' },
+  { to: '/admin/categories', icon: <FiTag size={18} />,     label: 'Categories' },
+  { to: '/admin/content',    icon: <FiEdit size={18} />,    label: 'Content' },
+  { to: '/admin/settings',   icon: <FiSettings size={18} />,label: 'Settings' },
 ];
 
 const AdminLayout: React.FC = () => {

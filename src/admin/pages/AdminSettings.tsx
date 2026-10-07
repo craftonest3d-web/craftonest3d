@@ -4,21 +4,44 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Form } from 'react-bootstrap';
-import { FiSave, FiCheckCircle } from 'react-icons/fi';
+import { FiSave, FiCheckCircle, FiDroplet } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookF, FaInstagram, FaYoutube, FaPinterestP } from 'react-icons/fa';
 import { getSiteSettings, saveSiteSettings } from '../../services/settingsService';
 import type { SiteSettings } from '../../types';
 
+// ── Theme definitions ──────────────────────────────────────────────────────
+const THEMES = [
+  { id: 'pink',   label: 'Soft Pink',     color: '#ff4f7a', bg: '#fff0f3' },
+  { id: 'purple', label: 'Royal Purple',  color: '#7c3aed', bg: '#f5f0ff' },
+  { id: 'green',  label: 'Emerald Green', color: '#059669', bg: '#ecfdf5' },
+  { id: 'blue',   label: 'Ocean Blue',    color: '#0062cc', bg: '#eff6ff' },
+];
+
+function applyTheme(themeId: string) {
+  document.documentElement.setAttribute('data-theme', themeId);
+  localStorage.setItem('pn-theme', themeId);
+}
+
 const AdminSettings: React.FC = () => {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
-  const [saved,    setSaved]    = useState(false);
-  const [error,    setError]    = useState('');
+  const [settings,    setSettings]    = useState<SiteSettings | null>(null);
+  const [loading,     setLoading]     = useState(true);
+  const [saving,      setSaving]      = useState(false);
+  const [saved,       setSaved]       = useState(false);
+  const [error,       setError]       = useState('');
+  const [activeTheme, setActiveTheme] = useState(
+    () => localStorage.getItem('pn-theme') ?? 'pink'
+  );
 
   useEffect(() => {
     getSiteSettings().then((s) => { setSettings(s); setLoading(false); });
+    // Apply saved theme on load
+    applyTheme(localStorage.getItem('pn-theme') ?? 'pink');
   }, []);
+
+  const handleThemeChange = (themeId: string) => {
+    setActiveTheme(themeId);
+    applyTheme(themeId);
+  };
 
   const set = (key: keyof SiteSettings, value: unknown) =>
     setSettings((prev) => prev ? { ...prev, [key]: value } : prev);
@@ -80,6 +103,52 @@ const AdminSettings: React.FC = () => {
 
       <Form onSubmit={handleSubmit} noValidate>
 
+        {/* ── Theme Switcher ─────────────────────────── */}
+        <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #f0f1f5' }}>
+          <h6 className="fw-bold mb-1 d-flex align-items-center gap-2">
+            <FiDroplet size={16} style={{ color: 'var(--pn-primary)' }} />
+            Store Theme
+          </h6>
+          <p className="text-muted mb-3" style={{ fontSize: '0.82rem' }}>
+            Choose a color theme for the entire store. Changes apply instantly.
+          </p>
+          <div className="d-flex flex-wrap gap-3">
+            {THEMES.map((theme) => (
+              <button
+                key={theme.id}
+                type="button"
+                onClick={() => handleThemeChange(theme.id)}
+                className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                style={{
+                  border: activeTheme === theme.id
+                    ? `2.5px solid ${theme.color}`
+                    : '2px solid #e8eaed',
+                  backgroundColor: activeTheme === theme.id ? theme.bg : 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  color: activeTheme === theme.id ? theme.color : 'var(--pn-text-muted)',
+                }}
+              >
+                {/* Color dot */}
+                <span style={{
+                  width: 18, height: 18, borderRadius: '50%',
+                  backgroundColor: theme.color, flexShrink: 0,
+                  boxShadow: activeTheme === theme.id ? `0 0 0 3px ${theme.bg}, 0 0 0 4px ${theme.color}` : 'none',
+                  transition: 'box-shadow 0.2s',
+                }} />
+                {theme.label}
+                {activeTheme === theme.id && (
+                  <FiCheckCircle size={14} style={{ color: theme.color }} />
+                )}
+              </button>
+            ))}
+          </div>
+          <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.75rem' }}>
+            Theme is saved in your browser. Visitors see the default pink theme unless you update the code.
+          </p>
+        </div>
         {/* ── Business Info ─────────────────────────── */}
         <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #f0f1f5' }}>
           <h6 className="fw-bold mb-3">Business Information</h6>

@@ -1,7 +1,7 @@
+import React, { lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
 
-// ── Public site (unchanged) ────────────────────────────────────────────────
+// ── Public site ────────────────────────────────────────────────────────────
 import MainLayout from './layout/MainLayout';
 import Home       from './pages/Home/Home';
 import Products   from './pages/Products/Products';
@@ -9,66 +9,57 @@ import About      from './pages/About/About';
 import Contact    from './pages/Contact/Contact';
 import NotFound   from './pages/NotFound/NotFound';
 
-// ── Admin panel (lazy-loaded so it never loads on the public site) ─────────
-import ProtectedRoute    from './admin/components/ProtectedRoute';
-import AdminLayout       from './admin/layout/AdminLayout';
-const AdminLogin         = lazy(() => import('./admin/pages/AdminLogin'));
-const AdminDashboard     = lazy(() => import('./admin/pages/AdminDashboard'));
-const AdminProducts      = lazy(() => import('./admin/pages/AdminProducts'));
-const AdminProductForm   = lazy(() => import('./admin/pages/AdminProductForm'));
-const AdminCategories    = lazy(() => import('./admin/pages/AdminCategories'));
-const AdminSettings      = lazy(() => import('./admin/pages/AdminSettings'));
+// ── Admin shell ────────────────────────────────────────────────────────────
+import ProtectedRoute  from './admin/components/ProtectedRoute';
+import AdminLayout     from './admin/layout/AdminLayout';
+import AdminSuspense   from './admin/components/AdminSuspense';
 
-const AdminSuspense = ({ children }: { children: React.ReactNode }) => (
-  <Suspense
-    fallback={
-      <div className="d-flex align-items-center justify-content-center min-vh-100">
-        <div className="spinner-border" style={{ color: 'var(--pn-primary)' }} role="status">
-          <span className="visually-hidden">Loading…</span>
-        </div>
-      </div>
-    }
-  >
-    {children}
-  </Suspense>
-);
+// ── Admin pages (lazy — never bundled into the public site) ────────────────
+const AdminLogin       = lazy(() => import('./admin/pages/AdminLogin'));
+const AdminDashboard   = lazy(() => import('./admin/pages/AdminDashboard'));
+const AdminProducts    = lazy(() => import('./admin/pages/AdminProducts'));
+const AdminProductForm = lazy(() => import('./admin/pages/AdminProductForm'));
+const AdminCategories  = lazy(() => import('./admin/pages/AdminCategories'));
+const AdminContent     = lazy(() => import('./admin/pages/AdminContent'));
+const AdminSettings    = lazy(() => import('./admin/pages/AdminSettings'));
+
+// ── Wrap helper ────────────────────────────────────────────────────────────
+const w = (C: React.ReactNode) => <AdminSuspense>{C}</AdminSuspense>;
 
 export const router = createBrowserRouter([
+
   // ── Public site ───────────────────────────────────────────────────────────
   {
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true,          element: <Home /> },
-      { path: 'products',     element: <Products /> },
-      { path: 'about',        element: <About /> },
-      { path: 'contact',      element: <Contact /> },
-      { path: '*',            element: <NotFound /> },
+      { index: true,      element: <Home /> },
+      { path: 'products', element: <Products /> },
+      { path: 'about',    element: <About /> },
+      { path: 'contact',  element: <Contact /> },
+      { path: '*',        element: <NotFound /> },
     ],
   },
 
-  // ── Admin: login (public) ─────────────────────────────────────────────────
+  // ── Admin login (public) ──────────────────────────────────────────────────
   {
     path: '/admin/login',
-    element: <AdminSuspense><AdminLogin /></AdminSuspense>,
+    element: w(<AdminLogin />),
   },
 
-  // ── Admin: protected shell ────────────────────────────────────────────────
+  // ── Admin protected shell ─────────────────────────────────────────────────
   {
     path: '/admin',
-    element: (
-      <ProtectedRoute>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute><AdminLayout /></ProtectedRoute>,
     children: [
-      { index: true,                   element: <Navigate to="/admin/dashboard" replace /> },
-      { path: 'dashboard',             element: <AdminSuspense><AdminDashboard /></AdminSuspense> },
-      { path: 'products',              element: <AdminSuspense><AdminProducts /></AdminSuspense> },
-      { path: 'products/new',          element: <AdminSuspense><AdminProductForm /></AdminSuspense> },
-      { path: 'products/:id',          element: <AdminSuspense><AdminProductForm /></AdminSuspense> },
-      { path: 'categories',            element: <AdminSuspense><AdminCategories /></AdminSuspense> },
-      { path: 'settings',              element: <AdminSuspense><AdminSettings /></AdminSuspense> },
+      { index: true,              element: <Navigate to="/admin/dashboard" replace /> },
+      { path: 'dashboard',        element: w(<AdminDashboard />) },
+      { path: 'products',         element: w(<AdminProducts />) },
+      { path: 'products/new',     element: w(<AdminProductForm />) },
+      { path: 'products/:id',     element: w(<AdminProductForm />) },
+      { path: 'categories',       element: w(<AdminCategories />) },
+      { path: 'content',          element: w(<AdminContent />) },
+      { path: 'settings',         element: w(<AdminSettings />) },
     ],
   },
 ]);

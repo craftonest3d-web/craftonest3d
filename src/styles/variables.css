@@ -1,34 +1,80 @@
-/* PaperNest - Design Tokens and Variables */
-:root {
-  /* Brand Colors */
-  --pn-primary: #ff4f7a;
-  --pn-primary-light: #ff7b99;
-  --pn-primary-dark: #e03b64;
-  --pn-primary-rgba: rgba(255, 79, 122, 0.08);
-  --pn-primary-bg: #fff0f3;
+/* =====================================================
+   PaperNest – Design Tokens & Themes
+   =====================================================
+   HOW TO SWITCH THEMES:
+   Change <html data-theme="pink">  in index.html to:
+     data-theme="pink"    → Soft Pink (default)
+     data-theme="purple"  → Royal Purple
+     data-theme="green"   → Emerald Green
+     data-theme="blue"    → Ocean Blue
+   ===================================================== */
 
-  --pn-secondary: #0a1128;
+/* ── THEME: Soft Pink (default) ──────────────────── */
+:root,
+[data-theme="pink"] {
+  --pn-primary:       #ff4f7a;
+  --pn-primary-light: #ff7b99;
+  --pn-primary-dark:  #e03b64;
+  --pn-primary-rgba:  rgba(255, 79, 122, 0.08);
+  --pn-primary-bg:    #fff0f3;
+  --pn-shadow-pink:   0 8px 24px rgba(255, 79, 122, 0.18);
+}
+
+/* ── THEME: Royal Purple ─────────────────────────── */
+[data-theme="purple"] {
+  --pn-primary:       #7c3aed;
+  --pn-primary-light: #9d65f5;
+  --pn-primary-dark:  #6025d1;
+  --pn-primary-rgba:  rgba(124, 58, 237, 0.08);
+  --pn-primary-bg:    #f5f0ff;
+  --pn-shadow-pink:   0 8px 24px rgba(124, 58, 237, 0.18);
+}
+
+/* ── THEME: Emerald Green ────────────────────────── */
+[data-theme="green"] {
+  --pn-primary:       #059669;
+  --pn-primary-light: #34d399;
+  --pn-primary-dark:  #047857;
+  --pn-primary-rgba:  rgba(5, 150, 105, 0.08);
+  --pn-primary-bg:    #ecfdf5;
+  --pn-shadow-pink:   0 8px 24px rgba(5, 150, 105, 0.18);
+}
+
+/* ── THEME: Ocean Blue ───────────────────────────── */
+[data-theme="blue"] {
+  --pn-primary:       #0062cc;
+  --pn-primary-light: #3b8ae0;
+  --pn-primary-dark:  #004fa3;
+  --pn-primary-rgba:  rgba(0, 98, 204, 0.08);
+  --pn-primary-bg:    #eff6ff;
+  --pn-shadow-pink:   0 8px 24px rgba(0, 98, 204, 0.18);
+}
+
+/* ── Shared tokens (same across all themes) ──────── */
+:root {
+  /* Neutral colors */
+  --pn-secondary:       #0a1128;
   --pn-secondary-light: #1e2d5a;
 
   /* Backgrounds */
-  --pn-bg-light: #fafbfc;
-  --pn-bg-paper: #ffffff;
-  --pn-bg-pink-light: #fff0f3;
-  --pn-bg-section: #f8f9fc;
+  --pn-bg-light:        #fafbfc;
+  --pn-bg-paper:        #ffffff;
+  --pn-bg-pink-light:   var(--pn-primary-bg);
+  --pn-bg-section:      #f8f9fc;
 
-  /* Text Colors */
-  --pn-text-dark: #0a1128;
-  --pn-text-muted: #5c677d;
-  --pn-text-light: #ffffff;
+  /* Text */
+  --pn-text-dark:       #0a1128;
+  --pn-text-muted:      #5c677d;
+  --pn-text-light:      #ffffff;
 
-  /* Font Families */
-  --pn-font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  /* Fonts */
+  --pn-font-sans:  'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   --pn-font-serif: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Border Radius */
-  --pn-radius-sm: 8px;
-  --pn-radius-md: 16px;
-  --pn-radius-lg: 24px;
+  --pn-radius-sm:    8px;
+  --pn-radius-md:    16px;
+  --pn-radius-lg:    24px;
   --pn-radius-round: 50%;
 
   /* Shadows */
@@ -36,10 +82,9 @@
   --pn-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --pn-shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
   --pn-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
-  --pn-shadow-pink: 0 8px 24px rgba(255, 79, 122, 0.18);
 
   /* Transitions */
-  --pn-transition-fast: 0.15s ease;
+  --pn-transition-fast:   0.15s ease;
   --pn-transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --pn-transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
