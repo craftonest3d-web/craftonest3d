@@ -10,15 +10,6 @@ import { FaWhatsapp, FaFacebookF, FaInstagram, FaYoutube } from 'react-icons/fa'
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useCart } from '../../contexts/CartContext';
 
-const LogoIcon = () => (
-  <svg viewBox="0 0 32 32" className="me-2" style={{ width: 34, height: 34, flexShrink: 0 }} aria-hidden="true">
-    <path d="M16 3 L28 9.5 L28 22.5 L16 29 L4 22.5 L4 9.5 Z" fill="none" stroke="var(--pn-primary)" strokeWidth="2" strokeLinejoin="round" />
-    <path d="M4 9.5 L16 16 L28 9.5" fill="none" stroke="var(--pn-primary)" strokeWidth="2" strokeLinejoin="round" />
-    <path d="M16 16 L16 29" fill="none" stroke="var(--pn-primary)" strokeWidth="2" />
-    <path d="M16 16 L16 3" fill="none" stroke="var(--pn-primary)" strokeWidth="1.5" strokeDasharray="2 2" opacity="0.5" />
-  </svg>
-);
-
 export const Header: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
@@ -28,7 +19,9 @@ export const Header: React.FC = () => {
     if (searchTerm.trim()) navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
   };
 
-  const { whatsappNumber, announcementText, socialLinks } = useSiteSettings();
+  const { whatsappNumber, announcementText, socialLinks, siteLogo, showLogoText } = useSiteSettings();
+  const logoSrc = siteLogo?.trim() || '/logo.png'; // uploaded logo, else the bundled logo.png
+  const showText = showLogoText !== false; // default true
   const { totalItems, toggleCart } = useCart();
   const waHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi CRAFTONEST3D! I would like to get a quote for a custom 3D print.')}`;
 
@@ -82,15 +75,27 @@ export const Header: React.FC = () => {
             {/* Logo */}
             <Col xs={12} md={3} className="d-flex align-items-center justify-content-center justify-content-md-start">
               <Link to="/" className="d-flex align-items-center text-decoration-none">
-                <LogoIcon />
-                <div>
-                  <span style={{ color: 'var(--pn-primary)', fontWeight: 900, fontSize: '1.35rem', lineHeight: 1.1, letterSpacing: '-0.5px', display: 'block' }}>
-                    CRAFTONEST3D
-                  </span>
-                  <span style={{ color: '#666', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.5px' }}>
-                    Where Ideas Take Shape
-                  </span>
-                </div>
+                <span className="c3d-logo3d me-2" style={{ borderRadius: 5 }}>
+                  <img src={logoSrc} alt="CRAFTONEST3D" style={{ height: 46, width: 'auto', display: 'block', borderRadius: 5 }} />
+                </span>
+                {showText && (
+                  <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+                    <span style={{ fontWeight: 900, fontSize: '1.35rem', letterSpacing: '-0.5px', whiteSpace: 'nowrap', display: 'block' }}>
+                      {/* Silver "CRAFTONEST" + glittering gold "3D" — matches brand card */}
+                      <span style={{
+                        background: 'linear-gradient(180deg, #ffffff 0%, #cfd3da 60%, #9aa0a8 100%)',
+                        WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent',
+                      }}>CRAFTONEST</span>
+                      <span className="c3d-glitter">3D</span>
+                    </span>
+                    <span style={{ color: '#8a8a8a', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.5px', whiteSpace: 'nowrap', marginTop: 3 }}>
+                      Where Ideas Take Shape
+                    </span>
+                    <span style={{ color: 'var(--pn-primary)', fontSize: '0.52rem', fontWeight: 700, letterSpacing: '1.5px', whiteSpace: 'nowrap', marginTop: 5 }}>
+                      CREATE • CUSTOMIZE • GIFT
+                    </span>
+                  </div>
+                )}
               </Link>
             </Col>
 

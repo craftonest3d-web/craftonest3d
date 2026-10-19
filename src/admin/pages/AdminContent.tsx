@@ -18,14 +18,23 @@ const UploadImageField: React.FC<{ label: string; value: string; onChange: (v: s
   const [pct, setPct] = useState(0);
   const ref = React.useRef<HTMLInputElement>(null);
 
+  const [err, setErr] = useState('');
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setErr('');
     setUploading(true);
     setPct(0);
     try {
       const url = await uploadImage(file, setPct, 'craftonest3d/festival');
+      // Firestore field limit is ~1MB. If it's a base64 data URL that's too big, warn.
+      if (url.startsWith('data:') && url.length > 1_000_000) {
+        setErr('This image is too large to save. Please compress it (try tinypng.com, or ezgif.com for GIFs) to under ~700 KB and upload again.');
+        return;
+      }
       onChange(url);
+    } catch {
+      setErr('Upload failed. Please try a smaller image.');
     } finally {
       setUploading(false);
       if (ref.current) ref.current.value = '';
@@ -60,7 +69,8 @@ const UploadImageField: React.FC<{ label: string; value: string; onChange: (v: s
         <Form.Control type="url" value={value} onChange={(e) => onChange(e.target.value)}
           placeholder="…or paste an image URL" className="border-start-0" style={{ height: 40, fontSize: '0.85rem' }} />
       </div>
-      {helpText && <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>{helpText}</Form.Text>}
+      {err && <div className="mt-2 p-2 rounded-2" style={{ backgroundColor: '#fdecea', color: '#c62828', fontSize: '0.76rem' }}>⚠️ {err}</div>}
+      {helpText && <Form.Text className="text-muted d-block mt-1" style={{ fontSize: '0.75rem' }}>{helpText}</Form.Text>}
     </Form.Group>
   );
 };
@@ -211,6 +221,27 @@ const AdminContent: React.FC = () => {
       )}
 
       <Form onSubmit={handleSave} noValidate>
+
+        {/* ── SITE LOGO ────────────────────────────────── */}
+        <Section title="Site Logo" icon="⭐" defaultOpen>
+          <UploadImageField
+            label="Logo Image (PNG with transparent background works best)"
+            value={settings.siteLogo ?? ''}
+            onChange={(v) => set('siteLogo', v)}
+            helpText="Shown in the site header with a premium 3D hover + gold-shine effect. Leave empty to use the default icon."
+          />
+          <label className="d-flex align-items-center gap-2 mt-1" style={{ fontSize: '0.85rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={settings.showLogoText !== false}
+              onChange={(e) => set('showLogoText', e.target.checked)}
+            />
+            Show the “CRAFTONEST3D” text next to the logo
+          </label>
+          <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.75rem' }}>
+            Tip: keep the text ON so customers clearly see your brand name, since the logo mark alone may not spell it out.
+          </p>
+        </Section>
 
         {/* ── HERO SLIDE 1 ─────────────────────────────── */}
         <Section title="Hero Banner – Slide 1" icon="🖼️" defaultOpen>

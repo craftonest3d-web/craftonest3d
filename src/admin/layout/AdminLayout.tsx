@@ -47,16 +47,11 @@ const AdminLayout: React.FC = () => {
         className="d-flex align-items-center gap-2 px-4 py-4"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <div
-          style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: 'var(--pn-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          aria-hidden="true"
-        >
-          <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-            <path d="M16 3 L28 9.5 L28 22.5 L16 29 L4 22.5 L4 9.5 Z" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinejoin="round" />
-            <path d="M4 9.5 L16 16 L28 9.5" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinejoin="round" />
-            <path d="M16 16 L16 29" fill="none" stroke="#0a0a0a" strokeWidth="2.5" />
-          </svg>
-        </div>
+        <img
+          src="/logo.png"
+          alt="CRAFTONEST3D"
+          style={{ width: 38, height: 38, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }}
+        />
         <div>
           <p className="mb-0 fw-bold text-white" style={{ fontSize: '1rem', lineHeight: 1.1, color: 'var(--pn-primary)' }}>CRAFTONEST3D</p>
           <p className="mb-0" style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.5px' }}>ADMIN PANEL</p>

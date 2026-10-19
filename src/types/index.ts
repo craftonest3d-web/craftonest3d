@@ -96,6 +96,10 @@ export interface SiteSettings {
   paymentReplyMessage?: string;
   /** Available colours shown in the shop customizer (owner-managed) */
   shopColours?: { label: string; hex: string }[];
+  /** Site logo image (header, coming soon). Falls back to the built-in icon if empty. */
+  siteLogo?: string;
+  /** Show the "CRAFTONEST3D" text beside the logo (default true) */
+  showLogoText?: boolean;
   /** Festival / seasonal greeting popup + home banner (owner-controlled) */
   festival?: {
     enabled: boolean;        // show it or not

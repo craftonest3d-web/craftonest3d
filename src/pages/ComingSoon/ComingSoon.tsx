@@ -159,7 +159,8 @@ const Particles: React.FC = () => {
 
 // ── Main Component ─────────────────────────────────────────────────────────
 export const ComingSoon: React.FC = () => {
-  const { whatsappNumber, socialLinks } = useSiteSettings();
+  const { whatsappNumber, socialLinks, siteLogo } = useSiteSettings();
+  const logoSrc = siteLogo?.trim() || '/logo.png';
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -268,23 +269,31 @@ export const ComingSoon: React.FC = () => {
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem', animation: 'fadeUp 0.6s 0.1s ease both' }}>
-          <svg viewBox="0 0 32 32" style={{ width: 48, height: 48, margin: '0 auto 10px', display: 'block' }}>
-            <path d="M16 3 L28 9.5 L28 22.5 L16 29 L4 22.5 L4 9.5 Z" fill="none" stroke="#d4af37" strokeWidth="2" strokeLinejoin="round" />
-            <path d="M4 9.5 L16 16 L28 9.5" fill="none" stroke="#d4af37" strokeWidth="2" strokeLinejoin="round" />
-            <path d="M16 16 L16 29" fill="none" stroke="#d4af37" strokeWidth="2" />
-          </svg>
+          <span className="c3d-logo3d" style={{ display: 'inline-block', margin: '0 auto 12px', borderRadius: 5 }}>
+            <img src={logoSrc} alt="CRAFTONEST3D" style={{ height: 90, width: 'auto', display: 'block', borderRadius: 5 }} />
+          </span>
           <h1 style={{
             fontSize: 'clamp(2rem, 8vw, 3.5rem)',
-            fontWeight: 900, color: '#ffffff',
+            fontWeight: 900,
             letterSpacing: '-1px', margin: 0, lineHeight: 1,
           }}>
-            CRAFTONEST<span style={{ color: '#d4af37' }}>3D</span>
+            <span style={{
+              background: 'linear-gradient(180deg, #ffffff 0%, #cfd3da 60%, #9aa0a8 100%)',
+              WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent',
+            }}>CRAFTONEST</span>
+            <span className="c3d-glitter">3D</span>
           </h1>
           <p style={{
             color: '#d4af37', fontSize: '0.78rem', fontWeight: 700,
             letterSpacing: '3px', margin: '8px 0 0', textTransform: 'uppercase',
           }}>
             Where Ideas Take Shape
+          </p>
+          <p style={{
+            color: 'rgba(212,175,55,0.75)', fontSize: '0.68rem', fontWeight: 700,
+            letterSpacing: '2.5px', margin: '6px 0 0', textTransform: 'uppercase',
+          }}>
+            Create • Customize • Gift
           </p>
         </div>
 

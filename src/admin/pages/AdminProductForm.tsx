@@ -11,6 +11,7 @@ import { FiArrowLeft, FiSave, FiImage, FiUpload, FiX, FiInfo, FiPlus } from 'rea
 import { FaWhatsapp } from 'react-icons/fa';
 import { getProductById, addProduct, updateProduct } from '../../services/productService';
 import { getAllCategoriesAdmin } from '../../services/categoryService';
+import { compressImage } from '../../services/uploadService';
 import type { Product, Category } from '../../types';
 
 // ── Cloudinary config ──────────────────────────────────────────────────────
@@ -50,13 +51,11 @@ async function uploadToCloudinary(
 }
 
 async function uploadAsBase64(file: File, onProgress: (pct: number) => void): Promise<string> {
-  return new Promise((resolve, reject) => {
-    onProgress(20);
-    const reader = new FileReader();
-    reader.onload  = () => { onProgress(100); resolve(reader.result as string); };
-    reader.onerror = () => reject(new Error('Could not read file'));
-    reader.readAsDataURL(file);
-  });
+  onProgress(20);
+  // Compress so the stored string stays under Firestore's ~1MB field limit.
+  const dataUrl = await compressImage(file);
+  onProgress(100);
+  return dataUrl;
 }
 
 // ── Types & constants ──────────────────────────────────────────────────────
@@ -208,6 +207,12 @@ const AdminProductForm: React.FC = () => {
     setUploadPct(0);
     try {
       const url = await uploadToCloudinary(file, setUploadPct);
+      // Firestore caps a field at ~1MB. If the compressed base64 is still too big, warn.
+      if (url.startsWith('data:') && url.length > 1_000_000) {
+        setUploadError('Image is still too large after compression. Please use a smaller or simpler image (JPG works best), ideally under 1 MB.');
+        setLocalPreview(form.image);
+        return;
+      }
       set('image', url);
       setLocalPreview(url);
     } catch (err: unknown) {

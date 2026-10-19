@@ -9,20 +9,6 @@ import { FiMail, FiPhone, FiClock } from 'react-icons/fi';
 import { FaFacebookF, FaInstagram, FaYoutube, FaWhatsapp } from 'react-icons/fa';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 
-const LogoIcon = () => (
-  <svg
-    viewBox="0 0 32 32"
-    className="me-2"
-    style={{ width: '30px', height: '30px', flexShrink: 0 }}
-    aria-hidden="true"
-  >
-    <path d="M16 3 L28 9.5 L28 22.5 L16 29 L4 22.5 L4 9.5 Z" fill="none" stroke="var(--pn-primary)" strokeWidth="2" strokeLinejoin="round" />
-    <path d="M4 9.5 L16 16 L28 9.5" fill="none" stroke="var(--pn-primary)" strokeWidth="2" strokeLinejoin="round" />
-    <path d="M16 16 L16 29" fill="none" stroke="var(--pn-primary)" strokeWidth="2" />
-    <path d="M16 16 L16 3" fill="none" stroke="var(--pn-primary)" strokeWidth="1.5" strokeDasharray="2 2" opacity="0.5" />
-  </svg>
-);
-
 export const Footer: React.FC = () => {
   const { storePhone, storeEmail, businessHours, socialLinks, whatsappNumber } = useSiteSettings();
 
@@ -34,13 +20,20 @@ export const Footer: React.FC = () => {
           {/* ── Column 1: Brand ──────────────────────── */}
           <Col lg={3} md={6}>
             <Link to="/" className="d-flex align-items-center text-decoration-none mb-3">
-              <LogoIcon />
+              <img src="/logo.png" alt="CRAFTONEST3D" style={{ width: 42, height: 42, borderRadius: 5, objectFit: 'cover', marginRight: 10, flexShrink: 0 }} />
               <div className="d-flex flex-column">
-                <span style={{ color: 'var(--pn-primary)', fontWeight: 900, fontSize: '1.2rem', lineHeight: 1.1, letterSpacing: '-0.5px' }}>
-                  CRAFTONEST3D
+                <span style={{ fontWeight: 900, fontSize: '1.2rem', lineHeight: 1.1, letterSpacing: '-0.5px' }}>
+                  <span style={{
+                    background: 'linear-gradient(180deg, #ffffff 0%, #cfd3da 60%, #9aa0a8 100%)',
+                    WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent',
+                  }}>CRAFTONEST</span>
+                  <span style={{ color: 'var(--pn-primary)' }}>3D</span>
                 </span>
                 <span style={{ color: 'var(--pn-text-muted)', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.5px' }}>
                   Where Ideas Take Shape
+                </span>
+                <span style={{ color: 'var(--pn-primary)', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '1.5px', marginTop: 2 }}>
+                  CREATE • CUSTOMIZE • GIFT
                 </span>
               </div>
             </Link>

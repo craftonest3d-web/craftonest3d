@@ -43,6 +43,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     '• UPI ID: (add your UPI id)\n\n' +
     'After payment, kindly share the screenshot here. We will start printing once the advance is received. 🖨️',
 
+  siteLogo:     '',
+  showLogoText: true,
+
   festival: {
     enabled:    false,
     image:      '',
