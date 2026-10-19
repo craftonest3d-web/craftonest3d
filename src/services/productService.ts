@@ -39,6 +39,7 @@ function toProduct(id: string, data: Record<string, unknown>): Product {
     isBulk:          (data.isBulk         as boolean) ?? false,
     isCustomizable:  (data.isCustomizable as boolean | undefined),
     colourEnabled:   (data.colourEnabled  as boolean | undefined),
+    availableColours:(data.availableColours as string[] | undefined) ?? undefined,
     images:          (data.images         as string[] | undefined) ?? undefined,
     videoUrl:        (data.videoUrl       as string | undefined),
     videoEnabled:    (data.videoEnabled   as boolean) ?? false,

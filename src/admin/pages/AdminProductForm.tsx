@@ -11,8 +11,27 @@ import { FiArrowLeft, FiSave, FiImage, FiUpload, FiX, FiInfo, FiPlus } from 'rea
 import { FaWhatsapp } from 'react-icons/fa';
 import { getProductById, addProduct, updateProduct } from '../../services/productService';
 import { getAllCategoriesAdmin } from '../../services/categoryService';
+import { getSiteSettings } from '../../services/settingsService';
 import { compressImage } from '../../services/uploadService';
 import type { Product, Category } from '../../types';
+
+// Fallback colour list if settings not loaded yet
+const FALLBACK_COLOURS = [
+  { label: 'Black', hex: '#1C1C1C' }, { label: 'White', hex: '#FFFFFF' },
+  { label: 'Grey', hex: '#9E9E9E' }, { label: 'Silver', hex: '#C0C0C0' },
+  { label: 'Red', hex: '#E74C3C' }, { label: 'Dark Red', hex: '#B71C1C' },
+  { label: 'Orange', hex: '#E67E22' }, { label: 'Yellow', hex: '#F1C40F' },
+  { label: 'Gold', hex: '#D4AF37' }, { label: 'Lime', hex: '#CDDC39' },
+  { label: 'Green', hex: '#2ECC71' }, { label: 'Dark Green', hex: '#1B5E20' },
+  { label: 'Teal', hex: '#009688' }, { label: 'Cyan', hex: '#00BCD4' },
+  { label: 'Sky Blue', hex: '#87CEEB' }, { label: 'Blue', hex: '#2196F3' },
+  { label: 'Navy', hex: '#1A237E' }, { label: 'Purple', hex: '#9C27B0' },
+  { label: 'Violet', hex: '#7E57C2' }, { label: 'Lavender', hex: '#C39BD3' },
+  { label: 'Pink', hex: '#FF6B9D' }, { label: 'Magenta', hex: '#E91E63' },
+  { label: 'Brown', hex: '#795548' }, { label: 'Beige', hex: '#D7CCC8' },
+  { label: 'Rose Gold', hex: '#B76E79' }, { label: 'Copper', hex: '#B87333' },
+  { label: 'Glow Green', hex: '#B2FF59' }, { label: 'Transparent', hex: '#E8EAF6' },
+];
 
 // ── Cloudinary config ──────────────────────────────────────────────────────
 // Update these values when you set up your own Cloudinary account:
@@ -65,7 +84,7 @@ const EMPTY: ProductForm = {
   title: '', description: '', category: '', categoryLabel: '',
   price: 0, originalPrice: 0, rating: 5, reviews: 0,
   badge: '', badgeType: '', image: '', inStock: true,
-  isFeatured: false, isBulk: false, isCustomizable: true, colourEnabled: true, images: [], videoUrl: '', videoEnabled: false, material: '', size: '', sizePrices: {}, sizeOriginalPrices: {}, whatsappMessage: '',
+  isFeatured: false, isBulk: false, isCustomizable: true, colourEnabled: true, availableColours: [], images: [], videoUrl: '', videoEnabled: false, material: '', size: '', sizePrices: {}, sizeOriginalPrices: {}, whatsappMessage: '',
 };
 
 const BADGE_OPTIONS: { label: string; value: Product['badge']; type: Product['badgeType'] }[] = [
@@ -109,6 +128,7 @@ const AdminProductForm: React.FC = () => {
   const fileRef  = useRef<HTMLInputElement>(null);
 
   const [form,       setForm]       = useState<ProductForm>({ ...EMPTY });
+  const [palette,    setPalette]    = useState(FALLBACK_COLOURS);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading,    setLoading]    = useState(isEdit);
   const [saving,     setSaving]     = useState(false);
@@ -121,6 +141,9 @@ const AdminProductForm: React.FC = () => {
 
   useEffect(() => {
     getAllCategoriesAdmin().then(setCategories);
+    getSiteSettings().then((s) => {
+      if (s.shopColours && s.shopColours.length > 0) setPalette(s.shopColours);
+    });
     if (isEdit) {
       getProductById(id!).then((p) => {
         if (p) {
@@ -203,6 +226,27 @@ const AdminProductForm: React.FC = () => {
   };
   const removeGalleryImage = (i: number) =>
     setForm((prev) => ({ ...prev, images: (prev.images ?? []).filter((_, idx) => idx !== i) }));
+
+  // Toggle whether a colour label is available for this product.
+  // availableColours undefined/empty = all available.
+  const isColourAvailable = (label: string) => {
+    const list = form.availableColours;
+    return !list || list.length === 0 || list.includes(label);
+  };
+  const toggleColourAvail = (label: string) => {
+    setForm((prev) => {
+      const all = palette.map((c) => c.label);
+      // Start from current effective list (if empty = all).
+      const current = (prev.availableColours && prev.availableColours.length > 0)
+        ? prev.availableColours
+        : [...all];
+      let next: string[];
+      if (current.includes(label)) next = current.filter((l) => l !== label);
+      else next = [...current, label];
+      // If all selected, store empty (= all) to keep it simple.
+      return { ...prev, availableColours: next.length === all.length ? [] : next };
+    });
+  };
 
   const handleBadgeChange = (value: string) => {
     const opt = BADGE_OPTIONS.find((o) => o.value === value);
@@ -1017,6 +1061,39 @@ const AdminProductForm: React.FC = () => {
                   </div>
                 );
               })()}
+
+              {/* Which colours are available for THIS product */}
+              {form.colourEnabled !== false && (
+                <div className="mt-3 p-3 rounded-3" style={{ backgroundColor: '#faf7ff', border: '1px solid #ece3f5' }}>
+                  <p className="fw-semibold mb-1" style={{ fontSize: '0.8rem', color: '#5c677d' }}>Available colours for this item</p>
+                  <p className="mb-2" style={{ fontSize: '0.7rem', color: '#9a9a9a' }}>
+                    Tap to turn colours on/off. Unavailable ones show a ✕ to the customer. (All on = all available.)
+                  </p>
+                  <div className="d-flex flex-wrap gap-2">
+                    {palette.map((c) => {
+                      const on = isColourAvailable(c.label);
+                      return (
+                        <button
+                          key={c.label}
+                          type="button"
+                          onClick={() => toggleColourAvail(c.label)}
+                          title={`${c.label} — ${on ? 'available' : 'not available'}`}
+                          style={{
+                            position: 'relative', width: 30, height: 30, borderRadius: '50%',
+                            backgroundColor: c.hex,
+                            border: c.hex.toUpperCase() === '#FFFFFF' ? '1px solid #ccc' : '1px solid transparent',
+                            cursor: 'pointer', opacity: on ? 1 : 0.4,
+                            boxShadow: on ? '0 0 0 2px #9c27b0' : 'none',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          {!on && <span style={{ position: 'absolute', color: '#fff', fontWeight: 900, fontSize: '1rem', textShadow: '0 0 2px #000' }}>✕</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
           </Col>

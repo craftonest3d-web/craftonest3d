@@ -34,18 +34,34 @@ const FONTS = [
 
 // ── Colour swatches (fallback if admin hasn't set a list) ───────────────────
 const DEFAULT_COLOURS = [
-  { id: 'pink',     label: 'Pink',     hex: '#FF6B9D' },
-  { id: 'blue',     label: 'Blue',     hex: '#4A90E2' },
-  { id: 'purple',   label: 'Purple',   hex: '#9B59B6' },
-  { id: 'green',    label: 'Green',    hex: '#2ECC71' },
-  { id: 'yellow',   label: 'Yellow',   hex: '#F1C40F' },
-  { id: 'red',      label: 'Red',      hex: '#E74C3C' },
-  { id: 'orange',   label: 'Orange',   hex: '#E67E22' },
-  { id: 'white',    label: 'White',    hex: '#FFFFFF' },
-  { id: 'black',    label: 'Black',    hex: '#2C2C2C' },
-  { id: 'gold',     label: 'Gold',     hex: '#D4AF37' },
-  { id: 'skyblue',  label: 'Sky Blue', hex: '#87CEEB' },
-  { id: 'lavender', label: 'Lavender', hex: '#C39BD3' },
+  { id: 'black',     label: 'Black',       hex: '#1C1C1C' },
+  { id: 'white',     label: 'White',       hex: '#FFFFFF' },
+  { id: 'grey',      label: 'Grey',        hex: '#9E9E9E' },
+  { id: 'silver',    label: 'Silver',      hex: '#C0C0C0' },
+  { id: 'red',       label: 'Red',         hex: '#E74C3C' },
+  { id: 'darkred',   label: 'Dark Red',    hex: '#B71C1C' },
+  { id: 'orange',    label: 'Orange',      hex: '#E67E22' },
+  { id: 'yellow',    label: 'Yellow',      hex: '#F1C40F' },
+  { id: 'gold',      label: 'Gold',        hex: '#D4AF37' },
+  { id: 'lime',      label: 'Lime',        hex: '#CDDC39' },
+  { id: 'green',     label: 'Green',       hex: '#2ECC71' },
+  { id: 'darkgreen', label: 'Dark Green',  hex: '#1B5E20' },
+  { id: 'teal',      label: 'Teal',        hex: '#009688' },
+  { id: 'cyan',      label: 'Cyan',        hex: '#00BCD4' },
+  { id: 'skyblue',   label: 'Sky Blue',    hex: '#87CEEB' },
+  { id: 'blue',      label: 'Blue',        hex: '#2196F3' },
+  { id: 'navy',      label: 'Navy',        hex: '#1A237E' },
+  { id: 'purple',    label: 'Purple',      hex: '#9C27B0' },
+  { id: 'violet',    label: 'Violet',      hex: '#7E57C2' },
+  { id: 'lavender',  label: 'Lavender',    hex: '#C39BD3' },
+  { id: 'pink',      label: 'Pink',        hex: '#FF6B9D' },
+  { id: 'magenta',   label: 'Magenta',     hex: '#E91E63' },
+  { id: 'brown',     label: 'Brown',       hex: '#795548' },
+  { id: 'beige',     label: 'Beige',       hex: '#D7CCC8' },
+  { id: 'rosegold',  label: 'Rose Gold',   hex: '#B76E79' },
+  { id: 'copper',    label: 'Copper',      hex: '#B87333' },
+  { id: 'glow',      label: 'Glow Green',  hex: '#B2FF59' },
+  { id: 'clear',     label: 'Transparent', hex: '#E8EAF6' },
 ];
 
 // ── Sizes ──────────────────────────────────────────────────────────────────
@@ -98,18 +114,20 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
   const isCustom = typeof product.isCustomizable === 'boolean'
     ? product.isCustomizable
     : (product.category === 'pencil-toppers' || product.category === 'keychains');
-  // Colour picker: independent of personalization. Shown whenever colour is enabled.
-  // Default: ON for customizable/old products; for non-customizable, only if explicitly enabled.
-  const showColours = typeof product.colourEnabled === 'boolean'
-    ? product.colourEnabled
-    : isCustom;
+  // Colour picker: shown unless the owner explicitly turned it OFF.
+  // (So colours appear by default; only `colourEnabled === false` hides them.)
+  const showColours = product.colourEnabled !== false;
+  // Per-product available colour labels (empty/undefined = all available).
+  const availList = product.availableColours;
 
   const gallery = [product.image, ...((product.images ?? []).filter(Boolean))].filter(Boolean);
   const [activeImg, setActiveImg] = useState(product.image);
   const [name,     setName]     = useState('');
   const [showVideo, setShowVideo] = useState(false);
   const [font,     setFont]     = useState(FONTS[0]);
-  const [colour,   setColour]   = useState(COLOURS[0]);
+  const [colour,   setColour]   = useState(
+    (availList && availList.length > 0 ? COLOURS.find(c => availList.includes(c.label)) : COLOURS[0]) ?? COLOURS[0],
+  );
   const [size,     setSize]     = useState(hasSizes ? dynamicSizes[0] : '');
   const [qty,      setQty]      = useState(isBulk ? 25 : 1);
 
@@ -585,39 +603,58 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
             </div>
             )}
 
-            {/* Colour — personalized items with colour enabled */}
+            {/* Colour — clean swatch grid with selected name (eSUN-style) */}
             {showColours && (
             <div>
-              <label style={{ display: 'block', color: '#fff', fontSize: '0.875rem', fontWeight: 700, marginBottom: 8 }}>
-                🎨 Colour —{' '}
-                <span style={{ color: '#d4af37', fontWeight: 600 }}>{colour.label}</span>
+              <label style={{ display: 'block', color: '#fff', fontSize: '0.9rem', fontWeight: 700, marginBottom: 10 }}>
+                Colour: <span style={{ color: '#d4af37', fontWeight: 800 }}>{colour.label}</span>
               </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {COLOURS.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => setColour(c)}
-                    title={c.label}
-                    style={{
-                      width: 34, height: 34,
-                      borderRadius: '50%',
-                      backgroundColor: c.hex,
-                      border: colour.id === c.id
-                        ? '3px solid #d4af37'
-                        : c.hex === '#FFFFFF' ? '2px solid #444' : '2px solid transparent',
-                      cursor: 'pointer',
-                      transition: 'transform 0.15s',
-                      transform: colour.id === c.id ? 'scale(1.2)' : 'scale(1)',
-                      boxShadow: colour.id === c.id ? `0 0 0 2px rgba(212,175,55,0.4)` : 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    {colour.id === c.id && (
-                      <FiCheck size={14} style={{ color: c.hex === '#FFFFFF' || c.hex === '#F1C40F' || c.hex === '#D4AF37' ? '#000' : '#fff' }} />
-                    )}
-                  </button>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gap: 10, maxWidth: 320 }}>
+                {COLOURS.map(c => {
+                  const avail = !availList || availList.length === 0 || availList.includes(c.label);
+                  const selected = colour.id === c.id && avail;
+                  const isLight = ['#FFFFFF', '#F1C40F', '#D4AF37', '#87CEEB'].includes(c.hex.toUpperCase());
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => { if (avail) setColour(c); }}
+                      disabled={!avail}
+                      title={avail ? c.label : `${c.label} — not available`}
+                      style={{
+                        position: 'relative',
+                        width: 40, height: 40,
+                        borderRadius: '50%',
+                        backgroundColor: c.hex,
+                        border: selected
+                          ? '2px solid #d4af37'
+                          : (c.hex.toUpperCase() === '#FFFFFF' ? '1px solid #555' : '1px solid #2a2a2a'),
+                        outline: selected ? '2px solid #d4af37' : 'none',
+                        outlineOffset: 2,
+                        cursor: avail ? 'pointer' : 'not-allowed',
+                        opacity: avail ? 1 : 0.35,
+                        transition: 'transform 0.15s, outline 0.15s',
+                        transform: selected ? 'scale(1.06)' : 'scale(1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto',
+                      }}
+                    >
+                      {selected && (
+                        <FiCheck size={16} style={{ color: isLight ? '#000' : '#fff' }} />
+                      )}
+                      {!avail && (
+                        <span style={{
+                          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: '1.5rem', fontWeight: 900, textShadow: '0 0 2px #000, 0 0 3px #000',
+                          pointerEvents: 'none',
+                        }}>✕</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+              <p style={{ color: '#666', fontSize: '0.72rem', margin: '10px 0 0' }}>
+                ✕ = not available for this item
+              </p>
             </div>
             )}
 

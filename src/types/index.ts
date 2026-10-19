@@ -34,8 +34,10 @@ export interface Product {
   isBulk?: boolean;
   /** Personalized item → customer enters name/text, font, colour. If false, order directly. */
   isCustomizable?: boolean;
-  /** Show the colour picker (only applies when customizable). Default true. */
+  /** Show the colour picker. Default true. */
   colourEnabled?: boolean;
+  /** Which colour labels are available for THIS product. Empty/undefined = all available. Others show crossed out. */
+  availableColours?: string[];
   /** Extra gallery images (3–5 optional). The main `image` is the primary. */
   images?: string[];
   /** Optional sample video (YouTube link or direct .mp4 URL) */
