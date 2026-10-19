@@ -1,13 +1,69 @@
 /**
- * PaperNest – Admin Content Manager
+ * CRAFTONEST3D – Admin Content Manager
  * Control all visible text and images from one place.
- * Saves to Firestore settings/general — live on store immediately.
+ * Saves to Firestore settings/general — live on site immediately.
  */
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Form } from 'react-bootstrap';
-import { FiSave, FiCheckCircle, FiChevronDown, FiChevronUp, FiImage } from 'react-icons/fi';
+import { FiSave, FiCheckCircle, FiChevronDown, FiChevronUp, FiImage, FiUpload } from 'react-icons/fi';
 import { getSiteSettings, saveSiteSettings } from '../../services/settingsService';
+import { uploadImage } from '../../services/uploadService';
 import type { SiteSettings, HeroSlide, PromoBanner } from '../../types';
+
+// ── Upload image field (PNG / JPG / GIF) ────────────────────────────────────
+const UploadImageField: React.FC<{ label: string; value: string; onChange: (v: string) => void; helpText?: string }> = ({
+  label, value, onChange, helpText,
+}) => {
+  const [uploading, setUploading] = useState(false);
+  const [pct, setPct] = useState(0);
+  const ref = React.useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setPct(0);
+    try {
+      const url = await uploadImage(file, setPct, 'craftonest3d/festival');
+      onChange(url);
+    } finally {
+      setUploading(false);
+      if (ref.current) ref.current.value = '';
+    }
+  };
+
+  return (
+    <Form.Group className="mb-3">
+      <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>{label}</Form.Label>
+      {value && (
+        <div className="rounded-3 overflow-hidden mb-2" style={{ maxHeight: 160, border: '1px solid #eee' }}>
+          <img src={value} alt="" style={{ width: '100%', objectFit: 'contain', maxHeight: 160 }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+        </div>
+      )}
+      <input ref={ref} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handleFile} hidden />
+      <div className="d-flex gap-2">
+        <button type="button" onClick={() => ref.current?.click()} disabled={uploading}
+          className="btn btn-sm d-flex align-items-center gap-2"
+          style={{ backgroundColor: '#0a1128', color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.8rem', padding: '8px 14px', borderRadius: 8 }}>
+          {uploading ? <>Uploading… {pct}%</> : <><FiUpload size={14} /> Upload PNG / GIF</>}
+        </button>
+        {value && (
+          <button type="button" onClick={() => onChange('')}
+            className="btn btn-sm" style={{ backgroundColor: '#fdecea', color: '#c62828', border: 'none', fontWeight: 700, fontSize: '0.8rem', padding: '8px 14px', borderRadius: 8 }}>
+            Remove
+          </button>
+        )}
+      </div>
+      <div className="input-group mt-2">
+        <span className="input-group-text border-end-0 bg-white"><FiImage size={14} style={{ color: 'var(--pn-text-muted)' }} /></span>
+        <Form.Control type="url" value={value} onChange={(e) => onChange(e.target.value)}
+          placeholder="…or paste an image URL" className="border-start-0" style={{ height: 40, fontSize: '0.85rem' }} />
+      </div>
+      {helpText && <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>{helpText}</Form.Text>}
+    </Form.Group>
+  );
+};
 
 // ── Collapsible section ────────────────────────────────────────────────────
 const Section: React.FC<{ title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean }> = ({
@@ -101,6 +157,16 @@ const AdminContent: React.FC = () => {
       return { ...prev, promoBanners: banners };
     });
 
+  const DEFAULT_FEST = {
+    enabled: false, image: '', title: 'Happy Festival! 🎉',
+    message: 'Special festive offer on all custom pencil toppers!',
+    buttonText: 'Shop Offers', buttonLink: '/shop',
+    showPopup: true, showBanner: true, accent: '#d4af37',
+  };
+  const fest = settings?.festival ?? DEFAULT_FEST;
+  const setFest = (field: keyof typeof DEFAULT_FEST, value: string | boolean) =>
+    setSettings((prev) => prev ? { ...prev, festival: { ...DEFAULT_FEST, ...(prev.festival ?? {}), [field]: value } } : prev);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!settings) return;
@@ -129,7 +195,7 @@ const AdminContent: React.FC = () => {
       <div className="mb-4">
         <h4 className="fw-bold mb-1">Content Manager</h4>
         <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>
-          Edit all text, headings and images visible on the store. Changes save to Firestore and go live immediately.
+          Edit all text, headings and images visible on the site. Changes save to Firestore and go live immediately.
         </p>
       </div>
 
@@ -151,7 +217,7 @@ const AdminContent: React.FC = () => {
           <Row className="g-3">
             <Col sm={6}>
               <TextField label="Badge Text" value={settings.heroSlides[0]?.badge ?? ''}
-                onChange={(v) => setHero(0, 'badge', v)} placeholder="✨ Premium Stationery Store" />
+                onChange={(v) => setHero(0, 'badge', v)} placeholder="✨ Custom 3D Printing Studio" />
             </Col>
             <Col sm={6}>
               <TextField label="Background Color" value={settings.heroSlides[0]?.bgColor ?? ''}
@@ -159,15 +225,15 @@ const AdminContent: React.FC = () => {
             </Col>
             <Col sm={6}>
               <TextField label="Main Heading" value={settings.heroSlides[0]?.heading ?? ''}
-                onChange={(v) => setHero(0, 'heading', v)} placeholder="Your One Stop Shop For" />
+                onChange={(v) => setHero(0, 'heading', v)} placeholder="CRAFTONEST3D" />
             </Col>
             <Col sm={6}>
-              <TextField label="Highlighted Heading (pink text)" value={settings.heroSlides[0]?.headingHighlight ?? ''}
-                onChange={(v) => setHero(0, 'headingHighlight', v)} placeholder="Stationery & Gifts" />
+              <TextField label="Highlighted Heading (gold text)" value={settings.heroSlides[0]?.headingHighlight ?? ''}
+                onChange={(v) => setHero(0, 'headingHighlight', v)} placeholder="Where Ideas Take Shape" />
             </Col>
             <Col xs={12}>
               <TextField label="Sub Text" value={settings.heroSlides[0]?.subtext ?? ''}
-                onChange={(v) => setHero(0, 'subtext', v)} rows={2} placeholder="Explore premium stationery…" />
+                onChange={(v) => setHero(0, 'subtext', v)} rows={2} placeholder="From imagination to reality — we turn your ideas into high-quality 3D prints." />
             </Col>
             <Col sm={6}>
               <TextField label="Button Text" value={settings.heroSlides[0]?.buttonText ?? ''}
@@ -175,7 +241,7 @@ const AdminContent: React.FC = () => {
             </Col>
             <Col sm={6}>
               <TextField label="Button Link" value={settings.heroSlides[0]?.buttonLink ?? ''}
-                onChange={(v) => setHero(0, 'buttonLink', v)} placeholder="/products" />
+                onChange={(v) => setHero(0, 'buttonLink', v)} placeholder="/our-work" />
             </Col>
             <Col xs={12}>
               <ImageField label="Hero Image URL" value={settings.heroSlides[0]?.image ?? ''}
@@ -183,6 +249,66 @@ const AdminContent: React.FC = () => {
                 helpText="Recommended: 800×500px landscape image" />
             </Col>
           </Row>
+        </Section>
+
+        {/* ── FESTIVAL GREETING ────────────────────────── */}
+        <Section title="Festival Greeting (popup + banner)" icon="🎉" defaultOpen>
+          {/* On/off */}
+          <div
+            className="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3"
+            style={{ backgroundColor: fest.enabled ? '#e8f5e9' : '#f5f6f8', cursor: 'pointer' }}
+            onClick={() => setFest('enabled', !fest.enabled)}
+            role="checkbox" aria-checked={fest.enabled} tabIndex={0}
+          >
+            <div>
+              <span className="fw-semibold" style={{ fontSize: '0.9rem', color: fest.enabled ? '#2e7d32' : '#5c677d' }}>
+                {fest.enabled ? '✓ Festival Greeting is ON' : 'Festival Greeting is OFF'}
+              </span>
+              <p className="mb-0" style={{ fontSize: '0.75rem', color: '#777' }}>
+                Turn on during a festival, off when it is over.
+              </p>
+            </div>
+            <div className="rounded-pill" style={{ width: 44, height: 24, backgroundColor: fest.enabled ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: 2, left: fest.enabled ? 22 : 2, transition: 'left 0.2s' }} />
+            </div>
+          </div>
+
+          <UploadImageField
+            label="Greeting Image (PNG or GIF)"
+            value={fest.image}
+            onChange={(v) => setFest('image', v)}
+            helpText="Upload a festival wish image or animated GIF — shown as-is in the popup and banner."
+          />
+
+          <Row className="g-3">
+            <Col sm={6}><TextField label="Greeting Title" value={fest.title} onChange={(v) => setFest('title', v)} placeholder="Happy Diwali! 🪔" /></Col>
+            <Col sm={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>Accent / Glow Colour</Form.Label>
+                <div className="d-flex gap-2 align-items-center">
+                  <input type="color" value={fest.accent} onChange={(e) => setFest('accent', e.target.value)}
+                    style={{ width: 46, height: 42, border: '1px solid #e3e6ec', borderRadius: 8, padding: 2, cursor: 'pointer' }} />
+                  <Form.Control value={fest.accent} onChange={(e) => setFest('accent', e.target.value)}
+                    style={{ height: 42, fontSize: '0.85rem', fontFamily: 'monospace' }} />
+                </div>
+              </Form.Group>
+            </Col>
+            <Col xs={12}><TextField label="Offer / Message" value={fest.message} onChange={(v) => setFest('message', v)} rows={2} placeholder="Flat 25% OFF all custom pencil toppers this festive season!" /></Col>
+            <Col sm={6}><TextField label="Button Text" value={fest.buttonText} onChange={(v) => setFest('buttonText', v)} placeholder="Shop Festival Offers" /></Col>
+            <Col sm={6}><TextField label="Button Link" value={fest.buttonLink} onChange={(v) => setFest('buttonLink', v)} placeholder="/shop" /></Col>
+          </Row>
+
+          {/* Where to show */}
+          <div className="d-flex flex-wrap gap-3 mt-1">
+            <label className="d-flex align-items-center gap-2" style={{ fontSize: '0.85rem', cursor: 'pointer' }}>
+              <input type="checkbox" checked={fest.showPopup} onChange={(e) => setFest('showPopup', e.target.checked)} />
+              Show popup (once per visit)
+            </label>
+            <label className="d-flex align-items-center gap-2" style={{ fontSize: '0.85rem', cursor: 'pointer' }}>
+              <input type="checkbox" checked={fest.showBanner} onChange={(e) => setFest('showBanner', e.target.checked)} />
+              Show banner on home page
+            </label>
+          </div>
         </Section>
 
         {/* ── HERO SLIDE 2 ─────────────────────────────── */}
@@ -201,7 +327,7 @@ const AdminContent: React.FC = () => {
                 onChange={(v) => setHero(1, 'heading', v)} />
             </Col>
             <Col sm={6}>
-              <TextField label="Highlighted Heading (pink text)" value={settings.heroSlides[1]?.headingHighlight ?? ''}
+              <TextField label="Highlighted Heading (gold text)" value={settings.heroSlides[1]?.headingHighlight ?? ''}
                 onChange={(v) => setHero(1, 'headingHighlight', v)} />
             </Col>
             <Col xs={12}>
@@ -254,12 +380,12 @@ const AdminContent: React.FC = () => {
           <Row className="g-3">
             <Col sm={6}><TextField label="Categories Section Title" value={settings.categoriesTitle} onChange={(v) => set('categoriesTitle', v)} /></Col>
             <Col sm={6}><TextField label="Categories Sub Text" value={settings.categoriesSubtext} onChange={(v) => set('categoriesSubtext', v)} /></Col>
-            <Col sm={6}><TextField label="Featured Products Title" value={settings.featuredTitle} onChange={(v) => set('featuredTitle', v)} /></Col>
-            <Col sm={6}><TextField label="Featured Products Sub Text" value={settings.featuredSubtext} onChange={(v) => set('featuredSubtext', v)} /></Col>
-            <Col sm={6}><TextField label="Why Choose Us Title" value={settings.whyTitle} onChange={(v) => set('whyTitle', v)} /></Col>
-            <Col sm={6}><TextField label="Why Choose Us Sub Text" value={settings.whySubtext} onChange={(v) => set('whySubtext', v)} /></Col>
-            <Col sm={6}><TextField label="Newsletter Title" value={settings.newsletterTitle} onChange={(v) => set('newsletterTitle', v)} /></Col>
-            <Col sm={6}><TextField label="Newsletter Sub Text" value={settings.newsletterSubtext} onChange={(v) => set('newsletterSubtext', v)} rows={2} /></Col>
+            <Col sm={6}><TextField label="Recent Works Title" value={settings.featuredTitle} onChange={(v) => set('featuredTitle', v)} /></Col>
+            <Col sm={6}><TextField label="Recent Works Sub Text" value={settings.featuredSubtext} onChange={(v) => set('featuredSubtext', v)} /></Col>
+            <Col sm={6}><TextField label="Services Title" value={settings.whyTitle} onChange={(v) => set('whyTitle', v)} /></Col>
+            <Col sm={6}><TextField label="Services Sub Text" value={settings.whySubtext} onChange={(v) => set('whySubtext', v)} /></Col>
+            <Col sm={6}><TextField label="CTA Title" value={settings.newsletterTitle} onChange={(v) => set('newsletterTitle', v)} /></Col>
+            <Col sm={6}><TextField label="CTA Sub Text" value={settings.newsletterSubtext} onChange={(v) => set('newsletterSubtext', v)} rows={2} /></Col>
           </Row>
         </Section>
 

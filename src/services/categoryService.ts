@@ -1,5 +1,5 @@
 /**
- * PaperNest – Category Service (Firestore)
+ * CRAFTONEST3D – Category Service (Firestore)
  * Collection: "categories"
  * Public function signatures unchanged — existing pages need no edits.
  */

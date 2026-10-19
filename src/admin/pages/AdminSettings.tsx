@@ -1,26 +1,13 @@
 /**
- * PaperNest – Admin Settings
+ * CRAFTONEST3D – Admin Settings
  * Edit and save site settings to Firestore "settings/general".
  */
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Form } from 'react-bootstrap';
-import { FiSave, FiCheckCircle, FiDroplet } from 'react-icons/fi';
+import { FiSave, FiCheckCircle, FiCopy } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookF, FaInstagram, FaYoutube, FaPinterestP } from 'react-icons/fa';
 import { getSiteSettings, saveSiteSettings } from '../../services/settingsService';
 import type { SiteSettings } from '../../types';
-
-// ── Theme definitions ──────────────────────────────────────────────────────
-const THEMES = [
-  { id: 'pink',   label: 'Soft Pink',     color: '#ff4f7a', bg: '#fff0f3' },
-  { id: 'purple', label: 'Royal Purple',  color: '#7c3aed', bg: '#f5f0ff' },
-  { id: 'green',  label: 'Emerald Green', color: '#059669', bg: '#ecfdf5' },
-  { id: 'blue',   label: 'Ocean Blue',    color: '#0062cc', bg: '#eff6ff' },
-];
-
-function applyTheme(themeId: string) {
-  document.documentElement.setAttribute('data-theme', themeId);
-  localStorage.setItem('pn-theme', themeId);
-}
 
 const AdminSettings: React.FC = () => {
   const [settings,    setSettings]    = useState<SiteSettings | null>(null);
@@ -28,20 +15,23 @@ const AdminSettings: React.FC = () => {
   const [saving,      setSaving]      = useState(false);
   const [saved,       setSaved]       = useState(false);
   const [error,       setError]       = useState('');
-  const [activeTheme, setActiveTheme] = useState(
-    () => localStorage.getItem('pn-theme') ?? 'pink'
-  );
+  const [copied,      setCopied]      = useState(false);
+
+  const copyPaymentReply = async () => {
+    const text = settings?.paymentReplyMessage ?? '';
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError('Could not copy — please select the text and copy manually.');
+    }
+  };
 
   useEffect(() => {
     getSiteSettings().then((s) => { setSettings(s); setLoading(false); });
-    // Apply saved theme on load
-    applyTheme(localStorage.getItem('pn-theme') ?? 'pink');
   }, []);
-
-  const handleThemeChange = (themeId: string) => {
-    setActiveTheme(themeId);
-    applyTheme(themeId);
-  };
 
   const set = (key: keyof SiteSettings, value: unknown) =>
     setSettings((prev) => prev ? { ...prev, [key]: value } : prev);
@@ -50,6 +40,14 @@ const AdminSettings: React.FC = () => {
     setSettings((prev) =>
       prev ? { ...prev, socialLinks: { ...prev.socialLinks, [key]: value } } : prev,
     );
+
+  // ── Shop colours ──────────────────────────────────────────────────────────
+  const colours = settings?.shopColours ?? [];
+  const setColours = (next: { label: string; hex: string }[]) => set('shopColours', next);
+  const addColour      = () => setColours([...colours, { label: 'New Colour', hex: '#FF6B9D' }]);
+  const removeColour   = (i: number) => setColours(colours.filter((_, idx) => idx !== i));
+  const updateColour   = (i: number, field: 'label' | 'hex', value: string) =>
+    setColours(colours.map((c, idx) => (idx === i ? { ...c, [field]: value } : c)));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,50 +101,19 @@ const AdminSettings: React.FC = () => {
 
       <Form onSubmit={handleSubmit} noValidate>
 
-        {/* ── Theme Switcher ─────────────────────────── */}
+        {/* ── Theme Info ──────────────────────────── */}
         <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #f0f1f5' }}>
-          <h6 className="fw-bold mb-1 d-flex align-items-center gap-2">
-            <FiDroplet size={16} style={{ color: 'var(--pn-primary)' }} />
-            Store Theme
-          </h6>
-          <p className="text-muted mb-3" style={{ fontSize: '0.82rem' }}>
-            Choose a color theme for the entire store. Changes apply instantly.
-          </p>
-          <div className="d-flex flex-wrap gap-3">
-            {THEMES.map((theme) => (
-              <button
-                key={theme.id}
-                type="button"
-                onClick={() => handleThemeChange(theme.id)}
-                className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
-                style={{
-                  border: activeTheme === theme.id
-                    ? `2.5px solid ${theme.color}`
-                    : '2px solid #e8eaed',
-                  backgroundColor: activeTheme === theme.id ? theme.bg : 'white',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  color: activeTheme === theme.id ? theme.color : 'var(--pn-text-muted)',
-                }}
-              >
-                {/* Color dot */}
-                <span style={{
-                  width: 18, height: 18, borderRadius: '50%',
-                  backgroundColor: theme.color, flexShrink: 0,
-                  boxShadow: activeTheme === theme.id ? `0 0 0 3px ${theme.bg}, 0 0 0 4px ${theme.color}` : 'none',
-                  transition: 'box-shadow 0.2s',
-                }} />
-                {theme.label}
-                {activeTheme === theme.id && (
-                  <FiCheckCircle size={14} style={{ color: theme.color }} />
-                )}
-              </button>
-            ))}
+          <h6 className="fw-bold mb-3">Site Theme</h6>
+          <div className="d-flex align-items-center gap-3 p-3 rounded-3"
+            style={{ backgroundColor: '#1a1a1a', border: '2px solid #d4af37' }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: '#d4af37', flexShrink: 0 }} />
+            <div>
+              <p className="fw-bold mb-0" style={{ fontSize: '0.9rem', color: '#f5f5f5' }}>Dark + Gold</p>
+              <p className="mb-0" style={{ fontSize: '0.78rem', color: '#9a9a9a' }}>CRAFTONEST3D premium theme — black background with gold accents.</p>
+            </div>
           </div>
           <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.75rem' }}>
-            Theme is saved in your browser. Visitors see the default pink theme unless you update the code.
+            The dark + gold theme is applied site-wide. No switching needed.
           </p>
         </div>
         {/* ── Business Info ─────────────────────────── */}
@@ -159,7 +126,7 @@ const AdminSettings: React.FC = () => {
                 <Form.Control
                   id="storeName" value={settings.storeName}
                   onChange={(e) => set('storeName', e.target.value)}
-                  placeholder="PaperNest"
+                  placeholder="CRAFTONEST3D"
                   style={{ height: 44 }}
                 />
               </Form.Group>
@@ -170,7 +137,7 @@ const AdminSettings: React.FC = () => {
                 <Form.Control
                   id="storeEmail" type="email" value={settings.storeEmail}
                   onChange={(e) => set('storeEmail', e.target.value)}
-                  placeholder="hello@papernest.in"
+                  placeholder="hello@craftonest3d.com"
                   style={{ height: 44 }}
                 />
               </Form.Group>
@@ -203,7 +170,7 @@ const AdminSettings: React.FC = () => {
                 <Form.Control
                   id="storeAddress" value={settings.storeAddress}
                   onChange={(e) => set('storeAddress', e.target.value)}
-                  placeholder="123, Stationery Street, City – 400001"
+                  placeholder="Maker Studio, Your City – 400001"
                   style={{ height: 44 }}
                 />
               </Form.Group>
@@ -224,26 +191,182 @@ const AdminSettings: React.FC = () => {
                 <Form.Control
                   id="waNumber" value={settings.whatsappNumber}
                   onChange={(e) => set('whatsappNumber', e.target.value)}
-                  placeholder="919876543210"
+                  placeholder="918072851386"
                   style={{ height: 44 }}
                 />
                 <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
-                  Include country code, no + or spaces. e.g. 919876543210
+                  Include country code, no + or spaces. e.g. 918072851386
                 </Form.Text>
               </Form.Group>
             </Col>
             <Col sm={6}>
               <Form.Group>
-                <label className={labelClass} style={labelStyle} htmlFor="announcement">Announcement Bar Text</label>
+                <label className={labelClass} style={labelStyle} htmlFor="announcement">Announcement Bar Text (scrolling)</label>
                 <Form.Control
+                  as="textarea" rows={2}
                   id="announcement" value={settings.announcementText}
                   onChange={(e) => set('announcementText', e.target.value)}
-                  placeholder="🎉 Free delivery on orders above ₹499!"
-                  style={{ height: 44 }}
+                  placeholder="🎉 Flat 20% OFF this week | 🚚 Free delivery above ₹499 | ✨ New designs added"
+                  style={{ fontSize: '0.85rem' }}
                 />
+                <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
+                  This text scrolls across the top of the site. Add several ads/offers separated by <strong>|</strong> (a bar) — each shows as its own moving message. Leave empty to hide the bar.
+                </Form.Text>
               </Form.Group>
             </Col>
           </Row>
+        </div>
+
+        {/* ── Payment Options ───────────────────────── */}
+        <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #f0f1f5' }}>
+          <h6 className="fw-bold mb-3">💳 Payment Options</h6>
+          <Row className="g-3">
+            <Col sm={6}>
+              <Form.Group>
+                <label className={labelClass} style={labelStyle} htmlFor="upiNumber">GPay / UPI Number</label>
+                <Form.Control
+                  id="upiNumber" value={settings.upiNumber ?? ''}
+                  onChange={(e) => set('upiNumber', e.target.value)}
+                  placeholder="918072851386"
+                  style={{ height: 44 }}
+                />
+                <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
+                  Your GPay / PhonePe number for receiving payments.
+                </Form.Text>
+              </Form.Group>
+            </Col>
+            <Col sm={6}>
+              <Form.Group>
+                <label className={labelClass} style={labelStyle} htmlFor="upiId">UPI ID (optional)</label>
+                <Form.Control
+                  id="upiId" value={settings.upiId ?? ''}
+                  onChange={(e) => set('upiId', e.target.value)}
+                  placeholder="craftonest3d@okaxis"
+                  style={{ height: 44 }}
+                />
+                <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
+                  Your UPI ID, e.g. yourname@okaxis or yourname@ybl
+                </Form.Text>
+              </Form.Group>
+            </Col>
+            <Col xs={12}>
+              <div
+                className="d-flex align-items-center justify-content-between p-3 rounded-3"
+                style={{ backgroundColor: settings.codAvailable ? '#e8f5e9' : '#f5f6f8', cursor: 'pointer' }}
+                onClick={() => set('codAvailable', !settings.codAvailable)}
+                role="checkbox" aria-checked={settings.codAvailable ?? false} tabIndex={0}
+              >
+                <div>
+                  <span className="fw-semibold" style={{ fontSize: '0.9rem', color: settings.codAvailable ? '#2e7d32' : '#5c677d' }}>
+                    {settings.codAvailable ? '✓ Cash on Delivery (COD) Available' : 'COD Disabled'}
+                  </span>
+                  <p className="mb-0" style={{ fontSize: '0.75rem', color: '#777' }}>
+                    Show "COD Available" on the shop page
+                  </p>
+                </div>
+                <div className="rounded-pill" style={{ width: 40, height: 22, backgroundColor: settings.codAvailable ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: 2, left: settings.codAvailable ? 20 : 2, transition: 'left 0.2s' }} />
+                </div>
+              </div>
+            </Col>
+
+            {/* Payment reply message — copy & paste after confirming an order */}
+            <Col xs={12}>
+              <Form.Group>
+                <div className="d-flex align-items-center justify-content-between mb-1">
+                  <label className={labelClass} style={labelStyle} htmlFor="paymentReply">
+                    Payment Reply Message
+                  </label>
+                  <button
+                    type="button"
+                    onClick={copyPaymentReply}
+                    className="btn btn-sm d-flex align-items-center gap-1"
+                    style={{
+                      backgroundColor: copied ? '#e8f5e9' : '#f0f1f5',
+                      color: copied ? '#2e7d32' : '#333',
+                      border: 'none', fontSize: '0.76rem', fontWeight: 700,
+                      padding: '4px 12px', borderRadius: 7,
+                    }}
+                  >
+                    {copied ? <><FiCheckCircle size={13} /> Copied!</> : <><FiCopy size={13} /> Copy</>}
+                  </button>
+                </div>
+                <Form.Control
+                  as="textarea" rows={6} id="paymentReply"
+                  value={settings.paymentReplyMessage ?? ''}
+                  onChange={(e) => set('paymentReplyMessage', e.target.value)}
+                  placeholder={'Thank you for confirming your order!\n\nPlease pay the advance to:\n• GPay / PhonePe: 918072851386\n• UPI ID: yourname@okaxis'}
+                  style={{ fontSize: '0.85rem', lineHeight: 1.5 }}
+                />
+                <Form.Text className="text-muted" style={{ fontSize: '0.75rem' }}>
+                  After you confirm an order on WhatsApp, click <strong>Copy</strong> and paste this message to send your UPI payment details. Update your number/UPI ID here anytime.
+                </Form.Text>
+              </Form.Group>
+            </Col>
+          </Row>
+        </div>
+
+        {/* ── Available Colours ─────────────────────── */}
+        <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #f0f1f5' }}>
+          <div className="d-flex align-items-center justify-content-between mb-1">
+            <h6 className="fw-bold mb-0">🎨 Available Colours</h6>
+            <button
+              type="button"
+              onClick={addColour}
+              className="btn btn-sm"
+              style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '5px 12px', borderRadius: 7 }}
+            >
+              + Add Colour
+            </button>
+          </div>
+          <p className="text-muted mb-3" style={{ fontSize: '0.76rem' }}>
+            These are the colours customers can pick in the shop. Remove one when it is out of stock, add new ones anytime.
+          </p>
+
+          {colours.length === 0 ? (
+            <p className="text-muted mb-0" style={{ fontSize: '0.82rem' }}>
+              No colours set — the shop will use the default colour list. Click <strong>+ Add Colour</strong> to customise.
+            </p>
+          ) : (
+            <div className="d-flex flex-column gap-2">
+              {colours.map((c, i) => (
+                <div key={i} className="d-flex align-items-center gap-2">
+                  {/* Colour picker swatch */}
+                  <input
+                    type="color"
+                    value={c.hex}
+                    onChange={(e) => updateColour(i, 'hex', e.target.value)}
+                    title="Pick colour"
+                    style={{ width: 44, height: 40, border: '1px solid #e3e6ec', borderRadius: 8, padding: 2, cursor: 'pointer', flexShrink: 0 }}
+                  />
+                  {/* Name */}
+                  <input
+                    value={c.label}
+                    onChange={(e) => updateColour(i, 'label', e.target.value)}
+                    placeholder="Colour name"
+                    style={{ flex: 1, height: 40, border: '1px solid #e3e6ec', borderRadius: 8, padding: '0 10px', fontSize: '0.85rem' }}
+                  />
+                  {/* Hex text */}
+                  <input
+                    value={c.hex}
+                    onChange={(e) => updateColour(i, 'hex', e.target.value)}
+                    placeholder="#FF6B9D"
+                    style={{ width: 110, height: 40, border: '1px solid #e3e6ec', borderRadius: 8, padding: '0 10px', fontSize: '0.82rem', fontFamily: 'monospace' }}
+                  />
+                  {/* Remove */}
+                  <button
+                    type="button"
+                    onClick={() => removeColour(i)}
+                    className="btn btn-sm"
+                    style={{ backgroundColor: '#fdecea', color: '#c62828', border: 'none', fontWeight: 700, fontSize: '0.9rem', width: 38, height: 40, borderRadius: 8, flexShrink: 0 }}
+                    title="Remove colour"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Social Links ──────────────────────────── */}
@@ -251,10 +374,10 @@ const AdminSettings: React.FC = () => {
           <h6 className="fw-bold mb-3">Social Links</h6>
           <Row className="g-3">
             {([
-              { key: 'facebook',  icon: <FaFacebookF size={14} />,  label: 'Facebook URL',  placeholder: 'https://facebook.com/papernest' },
-              { key: 'instagram', icon: <FaInstagram size={14} />,  label: 'Instagram URL', placeholder: 'https://instagram.com/papernest' },
-              { key: 'youtube',   icon: <FaYoutube size={14} />,    label: 'YouTube URL',   placeholder: 'https://youtube.com/@papernest' },
-              { key: 'pinterest', icon: <FaPinterestP size={14} />, label: 'Pinterest URL', placeholder: 'https://pinterest.com/papernest' },
+              { key: 'facebook',  icon: <FaFacebookF size={14} />,  label: 'Facebook URL',  placeholder: 'https://facebook.com/craftonest3d' },
+              { key: 'instagram', icon: <FaInstagram size={14} />,  label: 'Instagram URL', placeholder: 'https://instagram.com/craftonest3d' },
+              { key: 'youtube',   icon: <FaYoutube size={14} />,    label: 'YouTube URL',   placeholder: 'https://youtube.com/@craftonest3d' },
+              { key: 'pinterest', icon: <FaPinterestP size={14} />, label: 'Pinterest URL', placeholder: 'https://pinterest.com/craftonest3d' },
             ] as { key: keyof SiteSettings['socialLinks']; icon: React.ReactNode; label: string; placeholder: string }[]).map(({ key, icon, label, placeholder }) => (
               <Col sm={6} key={key}>
                 <Form.Group>
@@ -294,3 +417,4 @@ const AdminSettings: React.FC = () => {
 };
 
 export default AdminSettings;
+

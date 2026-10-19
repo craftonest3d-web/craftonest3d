@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 @import './variables.css';
 
 /* =============================================
-   PaperNest – Global Styles
+   CRAFTONEST3D – Global Styles
+   Theme: Premium dark charcoal + gold accent
    ============================================= */
 
 *,
@@ -22,13 +23,13 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Scrollbar ─────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f8f9fa; }
-::-webkit-scrollbar-thumb { background: var(--pn-primary-light); border-radius: 4px; }
+/* ── Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: var(--pn-primary-dark); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--pn-primary); }
 
-/* ── Typography ────────────────────────── */
+/* ── Typography ────────────────────────────────── */
 h1, h2, h3, h4, h5, h6,
 .font-serif, .font-sans {
   font-family: var(--pn-font-sans);
@@ -43,7 +44,7 @@ a {
 }
 a:hover { color: var(--pn-primary); text-decoration: none; }
 
-/* ── Section Titles ────────────────────── */
+/* ── Section Titles ────────────────────────────── */
 .section-title {
   font-size: 1.75rem;
   font-weight: 800;
@@ -57,14 +58,14 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   margin: 0 auto;
 }
 
-/* ── Buttons ───────────────────────────── */
+/* ── Buttons (Gold) ─────────────────────────────── */
 .btn-pink {
   background-color: var(--pn-primary);
-  color: white !important;
+  color: #0a0a0a !important;
   border: none;
   border-radius: var(--pn-radius-sm);
   padding: 0.6rem 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -72,9 +73,9 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   box-shadow: var(--pn-shadow-pink);
 }
 .btn-pink:hover {
-  background-color: var(--pn-primary-dark);
+  background-color: var(--pn-primary-light);
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(255, 79, 122, 0.28);
+  box-shadow: 0 10px 28px rgba(212, 175, 55, 0.28);
 }
 
 .btn-outline-pink {
@@ -83,7 +84,7 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   border: 2px solid var(--pn-primary);
   border-radius: var(--pn-radius-sm);
   padding: 0.55rem 1.4rem;
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -91,30 +92,30 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .btn-outline-pink:hover {
   background-color: var(--pn-primary);
-  color: white !important;
+  color: #0a0a0a !important;
   transform: translateY(-1px);
 }
 
 .btn-all-categories {
   background-color: var(--pn-primary);
-  color: white !important;
+  color: #0a0a0a !important;
   border: none;
   border-radius: var(--pn-radius-sm);
   padding: 0.65rem 1.4rem;
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   transition: all var(--pn-transition-smooth);
 }
 .btn-all-categories:hover {
-  background-color: var(--pn-primary-dark);
+  background-color: var(--pn-primary-light);
 }
 
-/* ── Product Card ──────────────────────── */
+/* ── Product / Work Card ───────────────────────── */
 .card-custom {
-  background-color: var(--pn-bg-paper);
-  border: 1px solid #f0f1f5;
+  background-color: var(--pn-bg-pink-light);
+  border: 1px solid #2a2a2a;
   border-radius: var(--pn-radius-md);
   box-shadow: var(--pn-shadow-xs);
   transition: all var(--pn-transition-smooth);
@@ -123,7 +124,7 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 .card-custom:hover {
   transform: translateY(-6px);
   box-shadow: var(--pn-shadow-md);
-  border-color: rgba(255, 79, 122, 0.12);
+  border-color: rgba(212, 175, 55, 0.3);
 }
 
 /* Image zoom on hover */
@@ -135,7 +136,7 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .card-custom:hover .img-zoom { transform: scale(1.06); }
 
-/* ── Badges ────────────────────────────── */
+/* ── Badges ────────────────────────────────────── */
 .card-badge {
   position: absolute;
   top: 10px;
@@ -148,19 +149,20 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   z-index: 2;
   letter-spacing: 0.2px;
 }
-.badge-new        { background-color: #ff4f7a; color: white; }
-.badge-bestseller { background-color: #ff9f43; color: white; }
+.badge-new        { background-color: var(--pn-primary); color: #0a0a0a; }
+.badge-bestseller { background-color: #ff9f43; color: #0a0a0a; }
 .badge-sale       { background-color: #ee5253; color: white; }
-.badge-featured   { background-color: #6c5ce7; color: white; }
+.badge-featured   { background-color: var(--pn-primary-dark); color: #0a0a0a; }
+.badge-custom     { background-color: var(--pn-primary); color: #0a0a0a; }
 
-/* ── WhatsApp Order Button ─────────────── */
+/* ── WhatsApp Order Button ─────────────────────── */
 .whatsapp-order-btn {
   background-color: var(--pn-primary);
-  color: white !important;
+  color: #0a0a0a !important;
   border: none;
   width: 100%;
   padding: 0.6rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: var(--pn-radius-sm);
   display: flex;
   align-items: center;
@@ -171,11 +173,11 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   transition: all var(--pn-transition-fast);
 }
 .whatsapp-order-btn:hover {
-  background-color: var(--pn-primary-dark);
+  background-color: var(--pn-primary-light);
   transform: translateY(-1px);
 }
 
-/* ── Header Utilities ──────────────────── */
+/* ── Header Utilities ──────────────────────────── */
 .header-utility-link {
   display: flex;
   flex-direction: column;
@@ -191,10 +193,10 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 .header-utility-link svg { color: var(--pn-text-dark); }
 .header-utility-link:hover svg { color: var(--pn-primary); }
 
-/* ── Navbar ────────────────────────────── */
+/* ── Navbar ────────────────────────────────────── */
 .navbar-custom { background-color: var(--pn-bg-paper) !important; }
 .navbar-custom .nav-link {
-  color: #2f3542 !important;
+  color: #c0c0c0 !important;
   font-weight: 600;
   font-size: 0.9rem;
   padding: 0.45rem 0.9rem !important;
@@ -210,7 +212,7 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   background-color: var(--pn-primary-rgba);
 }
 
-/* ── Category Circle ───────────────────── */
+/* ── Category Circle ───────────────────────────── */
 .category-circle {
   width: 72px;
   height: 72px;
@@ -225,7 +227,7 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .category-circle-wrapper:hover .category-circle {
   background-color: var(--pn-primary);
-  color: white;
+  color: #0a0a0a;
   transform: translateY(-4px);
   box-shadow: var(--pn-shadow-pink);
   border-color: var(--pn-primary);
@@ -239,11 +241,11 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .category-circle-wrapper:hover .cat-name { color: var(--pn-primary); }
 
-/* ── Why Choose Section ────────────────── */
+/* ── Why Choose / Service Cards ────────────────── */
 .why-choose-container {
-  border: 1px solid #f0f1f5;
+  border: 1px solid #2a2a2a;
   border-radius: var(--pn-radius-md);
-  background-color: #ffffff;
+  background-color: var(--pn-bg-pink-light);
   padding: 2rem 1.5rem;
   box-shadow: var(--pn-shadow-xs);
 }
@@ -274,10 +276,10 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .why-card:hover .why-icon-wrap {
   background-color: var(--pn-primary);
-  color: white;
+  color: #0a0a0a;
 }
 
-/* ── Promo Banner Cards ─────────────────── */
+/* ── Promo Banner Cards ─────────────────────────── */
 .promo-card {
   border-radius: var(--pn-radius-md);
   padding: 2rem 2rem;
@@ -301,9 +303,11 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .promo-card:hover img { transform: scale(1.05); }
 
-/* ── Newsletter ────────────────────────── */
+/* ── CTA / Newsletter section ──────────────────── */
 .newsletter-section {
-  background: linear-gradient(135deg, var(--pn-primary) 0%, var(--pn-primary-dark) 100%);
+  background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);
+  border-top: 1px solid #2a2a2a;
+  border-bottom: 1px solid #2a2a2a;
 }
 .newsletter-input {
   border: none;
@@ -312,31 +316,35 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   border-radius: var(--pn-radius-sm) 0 0 var(--pn-radius-sm) !important;
   height: 48px;
   font-size: 0.95rem;
+  background-color: #1a1a1a;
+  color: var(--pn-text-dark);
+  border: 1px solid #333 !important;
 }
 .newsletter-btn {
-  background-color: var(--pn-text-dark);
-  color: white;
+  background-color: var(--pn-primary);
+  color: #0a0a0a;
   border: none;
   border-radius: 0 var(--pn-radius-sm) var(--pn-radius-sm) 0 !important;
   height: 48px;
   padding: 0 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
   white-space: nowrap;
   transition: background-color var(--pn-transition-fast);
 }
-.newsletter-btn:hover { background-color: #1a253a; }
+.newsletter-btn:hover { background-color: var(--pn-primary-light); }
 
-/* ── Footer ────────────────────────────── */
+/* ── Footer ────────────────────────────────────── */
 .footer-custom {
-  background-color: #fff0f3 !important;
+  background-color: #0a0a0a !important;
   color: var(--pn-text-dark) !important;
   padding: 4rem 0 2rem;
+  border-top: 1px solid #222;
 }
 .footer-custom h5 {
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--pn-text-dark);
+  color: var(--pn-primary);
   margin-bottom: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -365,10 +373,10 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 }
 .footer-contact-info li svg { color: var(--pn-primary); margin-top: 2px; flex-shrink: 0; }
 .social-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background-color: white;
+  background-color: #1c1c1c;
   color: var(--pn-text-dark);
   display: flex;
   align-items: center;
@@ -376,15 +384,17 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   box-shadow: var(--pn-shadow-xs);
   transition: all var(--pn-transition-smooth);
   text-decoration: none !important;
+  border: 1px solid #2a2a2a;
 }
 .social-icon:hover {
   background-color: var(--pn-primary);
-  color: white !important;
+  color: #0a0a0a !important;
   transform: translateY(-2px);
   box-shadow: var(--pn-shadow-pink);
+  border-color: var(--pn-primary);
 }
 
-/* ── Floating WhatsApp ──────────────────── */
+/* ── Floating WhatsApp ──────────────────────────── */
 .floating-whatsapp {
   position: fixed;
   bottom: 28px;
@@ -407,13 +417,14 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   color: white;
 }
 
-/* ── Page Hero Banner ───────────────────── */
+/* ── Page Hero Banner ───────────────────────────── */
 .page-hero {
-  background: linear-gradient(135deg, var(--pn-primary-bg) 0%, #fce4ec 100%);
+  background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);
   padding: 3.5rem 0;
+  border-bottom: 1px solid #222;
 }
 
-/* ── Product Filter Pills ───────────────── */
+/* ── Product / Work Filter Pills ───────────────── */
 .filter-pill {
   display: inline-flex;
   align-items: center;
@@ -423,8 +434,8 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   font-weight: 600;
   cursor: pointer;
   transition: all var(--pn-transition-fast);
-  border: 1.5px solid #e0e3ea;
-  background: white;
+  border: 1.5px solid #2a2a2a;
+  background: var(--pn-bg-pink-light);
   color: var(--pn-text-muted);
   user-select: none;
 }
@@ -435,20 +446,21 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 .filter-pill.active {
   background-color: var(--pn-primary);
   border-color: var(--pn-primary);
-  color: white;
+  color: #0a0a0a;
   box-shadow: var(--pn-shadow-pink);
 }
 
-/* ── About Page ─────────────────────────── */
+/* ── About Page ─────────────────────────────────── */
 .about-stat-card {
   text-align: center;
   padding: 1.5rem;
   border-radius: var(--pn-radius-md);
-  background-color: white;
-  box-shadow: var(--pn-shadow-sm);
+  background-color: var(--pn-bg-pink-light);
+  border: 1px solid #2a2a2a;
+  box-shadow: var(--pn-shadow-xs);
   transition: transform var(--pn-transition-smooth);
 }
-.about-stat-card:hover { transform: translateY(-4px); }
+.about-stat-card:hover { transform: translateY(-4px); border-color: rgba(212,175,55,0.3); }
 .about-stat-number {
   font-size: 2.25rem;
   font-weight: 800;
@@ -456,10 +468,10 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   line-height: 1;
 }
 
-/* ── Contact Page ───────────────────────── */
+/* ── Contact Page ───────────────────────────────── */
 .contact-info-card {
-  background: white;
-  border: 1px solid #f0f1f5;
+  background: var(--pn-bg-pink-light);
+  border: 1px solid #2a2a2a;
   border-radius: var(--pn-radius-md);
   padding: 1.5rem;
   display: flex;
@@ -471,7 +483,7 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 .contact-info-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--pn-shadow-md);
-  border-color: rgba(255, 79, 122, 0.15);
+  border-color: rgba(212, 175, 55, 0.25);
 }
 .contact-icon-wrap {
   width: 48px;
@@ -485,13 +497,23 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   justify-content: center;
 }
 
-/* ── Form Controls ──────────────────────── */
+/* ── Form Controls ──────────────────────────────── */
+.form-control, .form-select {
+  background-color: #1a1a1a;
+  border-color: #333;
+  color: var(--pn-text-dark);
+}
 .form-control:focus, .form-select:focus {
   border-color: var(--pn-primary-light);
-  box-shadow: 0 0 0 3px rgba(255, 79, 122, 0.1);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+  background-color: #1a1a1a;
+  color: var(--pn-text-dark);
 }
+.form-control::placeholder { color: #6a6a6a; }
+.form-label, .form-select option { color: var(--pn-text-dark); }
+.form-control option { color: #0a0a0a; }
 
-/* ── Animations ─────────────────────────── */
+/* ── Animations ─────────────────────────────────── */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -500,12 +522,12 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* ── Hero Carousel ──────────────────────── */
+/* ── Hero Carousel ──────────────────────────────── */
 .hero-carousel .carousel-indicators button {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--pn-primary-light);
+  background-color: var(--pn-primary-dark);
   border: none;
   opacity: 0.5;
   transition: all 0.3s;
@@ -517,10 +539,10 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
   border-radius: 4px;
 }
 
-/* ── Testimonial Cards ──────────────────── */
+/* ── Testimonial Cards ──────────────────────────── */
 .testimonial-card {
-  background: white;
-  border: 1px solid #f0f1f5;
+  background: var(--pn-bg-pink-light);
+  border: 1px solid #2a2a2a;
   border-radius: var(--pn-radius-md);
   padding: 1.5rem;
   box-shadow: var(--pn-shadow-xs);
@@ -529,15 +551,23 @@ a:hover { color: var(--pn-primary); text-decoration: none; }
 .testimonial-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--pn-shadow-md);
+  border-color: rgba(212, 175, 55, 0.25);
 }
 
 /* =====================================================
-   PaperNest – UI Polish & Animations (v2)
-   Applied globally — no component edits needed
+   CRAFTONEST3D – UI Polish & Animations
    ===================================================== */
 
-/* ── Smooth scroll & base motion ─────────────────── */
-html { scroll-behavior: smooth; }
+/* ── Remove Bootstrap focus glow on InputGroup ──── */
+.input-group:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.input-group .form-control:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #2a2a2a !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -566,7 +596,7 @@ html { scroll-behavior: smooth; }
   100% { transform: scale(1); }
 }
 
-/* Sections fade up gently on first paint */
+/* Sections fade in gently on first paint */
 section { animation: pnFadeIn 0.6s ease both; }
 
 /* Product / testimonial / info cards rise in with stagger */
@@ -590,7 +620,7 @@ section { animation: pnFadeIn 0.6s ease both; }
 }
 .card-custom:hover {
   transform: translateY(-8px) !important;
-  box-shadow: 0 16px 40px rgba(255, 79, 122, 0.14) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* WhatsApp button shimmer on hover */
@@ -603,7 +633,7 @@ section { animation: pnFadeIn 0.6s ease both; }
   position: absolute;
   top: 0; left: -120%;
   width: 80%; height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
   transform: skewX(-20deg);
   transition: left 0.6s ease;
 }
@@ -652,9 +682,9 @@ section { animation: pnFadeIn 0.6s ease both; }
 /* ── Badges: subtle attention ────────────────────── */
 .card-badge { animation: pnScaleIn 0.4s ease both; }
 
-/* ── Images: graceful load fade ──────────────────── */
+/* ── Images: graceful load (dark shimmer) ─────────── */
 .card-custom img, .promo-card img {
-  background: linear-gradient(110deg, #f5f6f8 8%, #eef0f3 18%, #f5f6f8 33%);
+  background: linear-gradient(110deg, #1a1a1a 8%, #222 18%, #1a1a1a 33%);
   background-size: 200% 100%;
 }
 
@@ -662,8 +692,6 @@ section { animation: pnFadeIn 0.6s ease both; }
 .form-control, .form-select {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-/* ── Links in footer: arrow nudge already exists ─── */
 
 /* ── Hero text entrance ──────────────────────────── */
 .hero-carousel .carousel-item.active h1 { animation: pnFadeUp 0.6s ease both; }
@@ -675,9 +703,10 @@ section { animation: pnFadeIn 0.6s ease both; }
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-.card-custom > div[style*='f5f6f8'],
-.card-custom > div[style*='f0f1f5'] {
-  background: linear-gradient(110deg, #eceef1 8%, #f5f6f8 18%, #eceef1 33%) !important;
+.card-custom > div[style*='1a1a1a'],
+.card-custom > div[style*='f0f1f5'],
+.card-custom > div[style*='f5f6f8'] {
+  background: linear-gradient(110deg, #181818 8%, #222 18%, #181818 33%) !important;
   background-size: 200% 100% !important;
   animation: pnShimmer 1.4s linear infinite;
 }
@@ -691,7 +720,7 @@ section { animation: pnFadeIn 0.6s ease both; }
 /* ── Promo cards: lift + glow ────────────────────── */
 .promo-card { will-change: transform; }
 .promo-card:hover {
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Filter pills: smooth toggle ─────────────────── */
@@ -704,8 +733,7 @@ section { animation: pnFadeIn 0.6s ease both; }
 .newsletter-btn { transition: background-color 0.2s ease, transform 0.15s ease; }
 .newsletter-btn:hover { transform: translateY(-1px); }
 
-/* ── Smooth page section reveal on scroll
-   (CSS-only via animation-timeline where supported) ── */
+/* ── Smooth page section reveal on scroll ───────── */
 @supports (animation-timeline: view()) {
   .card-custom,
   .testimonial-card,
@@ -718,36 +746,60 @@ section { animation: pnFadeIn 0.6s ease both; }
 }
 
 /* =====================================================
-   PaperNest – Admin Panel Polish & Animations
-   Targets admin pages via their structural classes
+   CRAFTONEST3D – Admin Panel Polish
+   (Admin keeps a light content area for usability)
    ===================================================== */
 
+/* Admin layout root is light — protect bg-white inside admin */
+.admin-root .bg-white { background-color: #ffffff !important; }
+.admin-root .bg-white .text-muted { color: #5c677d !important; }
+.admin-root .bg-white h4,
+.admin-root .bg-white h6,
+.admin-root .bg-white p { color: #0a1128; }
+.admin-root .bg-white th { color: #5c677d !important; }
+.admin-root .bg-white .table { color: #0a1128; }
+.admin-root .bg-white .table td,
+.admin-root .bg-white .table th { color: #0a1128; }
+.admin-root .bg-white input,
+.admin-root .bg-white select,
+.admin-root .bg-white textarea {
+  background-color: #ffffff !important;
+  color: #0a1128 !important;
+  border-color: #dde0e8 !important;
+}
+.admin-root .bg-white input:focus,
+.admin-root .bg-white select:focus,
+.admin-root .bg-white textarea:focus {
+  border-color: var(--pn-primary-light) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12) !important;
+}
+
 /* ── Admin stat / panel cards rise in ────────────── */
-.bg-white.rounded-4 {
+.admin-root .bg-white.rounded-4 {
   animation: pnFadeUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 /* Stagger the 4 dashboard stat cards */
-.g-3 > [class*='col']:nth-child(1) .bg-white.rounded-4 { animation-delay: 0.03s; }
-.g-3 > [class*='col']:nth-child(2) .bg-white.rounded-4 { animation-delay: 0.08s; }
-.g-3 > [class*='col']:nth-child(3) .bg-white.rounded-4 { animation-delay: 0.13s; }
-.g-3 > [class*='col']:nth-child(4) .bg-white.rounded-4 { animation-delay: 0.18s; }
+.admin-root .g-3 > [class*='col']:nth-child(1) .bg-white.rounded-4 { animation-delay: 0.03s; }
+.admin-root .g-3 > [class*='col']:nth-child(2) .bg-white.rounded-4 { animation-delay: 0.08s; }
+.admin-root .g-3 > [class*='col']:nth-child(3) .bg-white.rounded-4 { animation-delay: 0.13s; }
+.admin-root .g-3 > [class*='col']:nth-child(4) .bg-white.rounded-4 { animation-delay: 0.18s; }
 
 /* ── Stat cards: lift on hover ───────────────────── */
-.bg-white.rounded-4 {
+.admin-root .bg-white.rounded-4 {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.bg-white.rounded-4:hover {
+.admin-root .bg-white.rounded-4:hover {
   transform: translateY(-3px);
-  box-shadow: var(--pn-shadow-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 /* ── Admin table rows: smooth hover highlight ────── */
-.table tbody tr {
+.admin-root .table tbody tr {
   transition: background-color 0.18s ease;
 }
-.table tbody tr:hover {
-  background-color: var(--pn-primary-bg) !important;
+.admin-root .table tbody tr:hover {
+  background-color: rgba(212, 175, 55, 0.06) !important;
 }
 
 /* Table action buttons grow slightly */
@@ -774,7 +826,7 @@ a[class*='rounded-3'][style*='border'] {
 }
 
 /* ── Login card entrance ─────────────────────────── */
-.min-vh-100 > .bg-white.rounded-4 {
+.admin-root .min-vh-100 > .bg-white.rounded-4 {
   animation: pnScaleIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -782,8 +834,10 @@ a[class*='rounded-3'][style*='border'] {
 .modal.show .modal-dialog {
   animation: pnScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-
-/* ── Toggle switches already animate inline ──────── */
+.modal-content {
+  background-color: #ffffff;
+  color: #0a1128;
+}
 
 /* ── Seed banner: gentle attention pulse ─────────── */
 @keyframes pnGlow {
@@ -804,7 +858,7 @@ a[class*='rounded-3'][style*='border'] {
 }
 
 /* ── Form sections in product form rise in ───────── */
-.bg-white.rounded-4.p-4 {
+.admin-root .bg-white.rounded-4.p-4 {
   animation: pnFadeUp 0.4s ease both;
 }
 

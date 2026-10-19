@@ -1,5 +1,5 @@
 /**
- * PaperNest – useSiteSettings hook
+ * CRAFTONEST3D – useSiteSettings hook
  * Loads site settings from Firestore once on mount.
  * Returns DEFAULT_SETTINGS immediately so the UI renders without delay,
  * then updates when Firestore responds.

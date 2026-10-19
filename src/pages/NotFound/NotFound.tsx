@@ -1,10 +1,10 @@
 /**
- * PaperNest – 404 Not Found Page
+ * CRAFTONEST3D – 404 Not Found Page
  */
 import React from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FiHome, FiShoppingBag } from 'react-icons/fi';
+import { FiHome, FiLayers } from 'react-icons/fi';
 
 export const NotFound: React.FC = () => {
   return (
@@ -23,10 +23,11 @@ export const NotFound: React.FC = () => {
               borderRadius: '50%',
               backgroundColor: 'var(--pn-primary-bg)',
               color: 'var(--pn-primary)',
+              border: '1px solid #2a2a2a',
             }}
             aria-hidden="true"
           >
-            <span style={{ fontSize: '2.5rem' }}>📄</span>
+            <span style={{ fontSize: '2.5rem' }}>🖨️</span>
           </div>
 
           <h1
@@ -36,12 +37,12 @@ export const NotFound: React.FC = () => {
           >
             404
           </h1>
-          <h2 className="fw-bold mb-3" style={{ fontSize: '1.5rem' }}>
-            Page Lost in the Mail
+          <h2 className="fw-bold mb-3" style={{ fontSize: '1.5rem', color: 'var(--pn-text-dark)' }}>
+            This Print Wasn't Found
           </h2>
           <p
-            className="text-muted mx-auto mb-5"
-            style={{ maxWidth: 440, fontSize: '0.95rem', lineHeight: 1.7 }}
+            className="mx-auto mb-5"
+            style={{ maxWidth: 440, fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--pn-text-muted)' }}
           >
             We couldn't find the page you were looking for. It may have been moved or the
             address might be incorrect. Let's get you back on track!
@@ -56,11 +57,11 @@ export const NotFound: React.FC = () => {
               <FiHome size={17} /> Back to Home
             </Link>
             <Link
-              to="/products"
+              to="/shop"
               className="btn btn-outline-pink d-flex align-items-center gap-2"
               style={{ height: 46, fontSize: '0.9rem' }}
             >
-              <FiShoppingBag size={17} /> Browse Products
+              <FiLayers size={17} /> View Our Work
             </Link>
           </div>
         </div>

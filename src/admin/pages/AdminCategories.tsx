@@ -1,5 +1,5 @@
 /**
- * PaperNest – Admin Categories
+ * CRAFTONEST3D – Admin Categories
  * Add / Edit / Delete categories.
  */
 import React, { useEffect, useState } from 'react';

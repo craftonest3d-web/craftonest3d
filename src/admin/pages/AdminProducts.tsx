@@ -1,6 +1,6 @@
 /**
- * PaperNest – Admin Products List
- * Shows all products with edit / delete / toggle visibility actions.
+ * CRAFTONEST3D – Admin Works List
+ * Shows all works/portfolio items with edit / delete / toggle visibility actions.
  */
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -60,9 +60,9 @@ const AdminProducts: React.FC = () => {
       {/* Header */}
       <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
         <div>
-          <h4 className="fw-bold mb-1">Products</h4>
+          <h4 className="fw-bold mb-1">Works / Portfolio</h4>
           <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>
-            {products.length} product{products.length !== 1 ? 's' : ''} total
+            {products.length} work{products.length !== 1 ? 's' : ''} total
           </p>
         </div>
         <Link
@@ -70,7 +70,7 @@ const AdminProducts: React.FC = () => {
           className="btn btn-pink d-flex align-items-center gap-2"
           style={{ fontSize: '0.875rem' }}
         >
-          <FiPlus size={16} /> Add Product
+          <FiPlus size={16} /> Add Work
         </Link>
       </div>
 
@@ -83,7 +83,7 @@ const AdminProducts: React.FC = () => {
           <input
             type="text"
             className="form-control border-start-0 ps-0"
-            placeholder="Search products…"
+            placeholder="Search works…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ height: 40 }}
@@ -96,18 +96,18 @@ const AdminProducts: React.FC = () => {
         {loading ? (
           <div className="text-center py-5 text-muted">
             <div className="spinner-border spinner-border-sm me-2" />
-            Loading products…
+            Loading works…
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-5 text-muted">
-            {search ? `No products match "${search}".` : 'No products yet.'}
+            {search ? `No works match "${search}".` : 'No works yet.'}
           </div>
         ) : (
           <div className="table-responsive">
             <table className="table mb-0 align-middle" style={{ fontSize: '0.85rem' }}>
               <thead style={{ backgroundColor: '#fafbfc' }}>
                 <tr style={{ color: 'var(--pn-text-muted)' }}>
-                  <th className="border-0 fw-semibold py-3 ps-4">Product</th>
+                  <th className="border-0 fw-semibold py-3 ps-4">Work</th>
                   <th className="border-0 fw-semibold py-3">Category</th>
                   <th className="border-0 fw-semibold py-3">Price</th>
                   <th className="border-0 fw-semibold py-3">Badge</th>

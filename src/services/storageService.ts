@@ -1,8 +1,8 @@
 /**
- * PaperNest – Storage Service (FREE PLAN VERSION)
+ * CRAFTONEST3D – Storage Service (FREE PLAN VERSION)
  *
  * Firebase Storage requires the Blaze (paid) plan.
- * On the free Spark plan, product images are stored as external URLs only.
+ * On the free Spark plan, product/work images are stored as external URLs only.
  *
  * This file exports stub functions so existing imports don't break.
  * The AdminProductForm uses URL input instead of file upload.

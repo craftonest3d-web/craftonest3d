@@ -1,70 +1,30 @@
 /* =====================================================
-   PaperNest – Design Tokens & Themes
-   =====================================================
-   HOW TO SWITCH THEMES:
-   Change <html data-theme="pink">  in index.html to:
-     data-theme="pink"    → Soft Pink (default)
-     data-theme="purple"  → Royal Purple
-     data-theme="green"   → Emerald Green
-     data-theme="blue"    → Ocean Blue
+   CRAFTONEST3D – Design Tokens
+   Theme: Premium dark charcoal + gold accent
    ===================================================== */
 
-/* ── THEME: Soft Pink (default) ──────────────────── */
-:root,
-[data-theme="pink"] {
-  --pn-primary:       #ff4f7a;
-  --pn-primary-light: #ff7b99;
-  --pn-primary-dark:  #e03b64;
-  --pn-primary-rgba:  rgba(255, 79, 122, 0.08);
-  --pn-primary-bg:    #fff0f3;
-  --pn-shadow-pink:   0 8px 24px rgba(255, 79, 122, 0.18);
-}
-
-/* ── THEME: Royal Purple ─────────────────────────── */
-[data-theme="purple"] {
-  --pn-primary:       #7c3aed;
-  --pn-primary-light: #9d65f5;
-  --pn-primary-dark:  #6025d1;
-  --pn-primary-rgba:  rgba(124, 58, 237, 0.08);
-  --pn-primary-bg:    #f5f0ff;
-  --pn-shadow-pink:   0 8px 24px rgba(124, 58, 237, 0.18);
-}
-
-/* ── THEME: Emerald Green ────────────────────────── */
-[data-theme="green"] {
-  --pn-primary:       #059669;
-  --pn-primary-light: #34d399;
-  --pn-primary-dark:  #047857;
-  --pn-primary-rgba:  rgba(5, 150, 105, 0.08);
-  --pn-primary-bg:    #ecfdf5;
-  --pn-shadow-pink:   0 8px 24px rgba(5, 150, 105, 0.18);
-}
-
-/* ── THEME: Ocean Blue ───────────────────────────── */
-[data-theme="blue"] {
-  --pn-primary:       #0062cc;
-  --pn-primary-light: #3b8ae0;
-  --pn-primary-dark:  #004fa3;
-  --pn-primary-rgba:  rgba(0, 98, 204, 0.08);
-  --pn-primary-bg:    #eff6ff;
-  --pn-shadow-pink:   0 8px 24px rgba(0, 98, 204, 0.18);
-}
-
-/* ── Shared tokens (same across all themes) ──────── */
 :root {
-  /* Neutral colors */
-  --pn-secondary:       #0a1128;
-  --pn-secondary-light: #1e2d5a;
+  /* ── Brand accent: Gold ──────────────────────────────── */
+  --pn-primary:       #d4af37;   /* Classic gold */
+  --pn-primary-light: #f0d060;   /* Light gold  */
+  --pn-primary-dark:  #b8941f;   /* Deep gold   */
+  --pn-primary-rgba:  rgba(212, 175, 55, 0.12);
+  --pn-primary-bg:    #1c1c1c;   /* Dark accent surface */
+  --pn-shadow-pink:   0 8px 24px rgba(212, 175, 55, 0.16);
 
-  /* Backgrounds */
-  --pn-bg-light:        #fafbfc;
-  --pn-bg-paper:        #ffffff;
-  --pn-bg-pink-light:   var(--pn-primary-bg);
-  --pn-bg-section:      #f8f9fc;
+  /* ── Neutral / dark surfaces ────────────────────────── */
+  --pn-secondary:       #0a0a0a;
+  --pn-secondary-light: #1a1a1a;
 
-  /* Text */
-  --pn-text-dark:       #0a1128;
-  --pn-text-muted:      #5c677d;
+  /* Backgrounds — dark charcoal */
+  --pn-bg-light:        #0d0d0d;
+  --pn-bg-paper:        #111111;
+  --pn-bg-pink-light:   #1c1c1c;
+  --pn-bg-section:      #0f0f0f;
+
+  /* Text — bright white on dark for readability */
+  --pn-text-dark:       #ffffff;
+  --pn-text-muted:      #b0b0b0;
   --pn-text-light:      #ffffff;
 
   /* Fonts */
@@ -78,10 +38,10 @@
   --pn-radius-round: 50%;
 
   /* Shadows */
-  --pn-shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.04);
-  --pn-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --pn-shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
-  --pn-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --pn-shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --pn-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --pn-shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5);
+  --pn-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.55);
 
   /* Transitions */
   --pn-transition-fast:   0.15s ease;

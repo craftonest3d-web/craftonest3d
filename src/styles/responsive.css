@@ -1,5 +1,5 @@
 /* ===================================================
-   PaperNest – Responsive Adjustments
+   CRAFTONEST3D – Responsive Adjustments
    =================================================== */
 
 /* ── Large Tablets / Small Desktops ── */
@@ -51,7 +51,7 @@
   .newsletter-btn { border-radius: var(--pn-radius-sm) !important; height: 44px; }
 
   .category-circle { width: 60px; height: 60px; }
-  .cat-name { font-size: '0.72rem'; }
+  .cat-name { font-size: 0.72rem; }
 
   .filter-pill { font-size: 0.8rem; padding: 0.35rem 0.85rem; }
 }

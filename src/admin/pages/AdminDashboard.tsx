@@ -1,15 +1,16 @@
 /**
- * PaperNest – Admin Dashboard
- * Stats + recent products + quick actions + seed button.
+ * CRAFTONEST3D – Admin Dashboard
+ * Stats + recent works + quick actions + seed button.
  */
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Row, Col } from 'react-bootstrap';
-import { FiPackage, FiTag, FiPlusCircle, FiSettings, FiStar, FiEye, FiDatabase } from 'react-icons/fi';
+import { FiPackage, FiTag, FiPlusCircle, FiSettings, FiStar, FiEye, FiDatabase, FiCopy, FiCheckCircle } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { getAllProducts } from '../../services/productService';
 import { getAllCategoriesAdmin } from '../../services/categoryService';
-import { seedFirestoreIfEmpty, clearAndReseed } from '../../firebase/firebaseSeeder';
+import { getSiteSettings } from '../../services/settingsService';
+import { seedFirestoreIfEmpty, clearAndReseed, syncNewSeedItems } from '../../firebase/firebaseSeeder';
 import type { Product } from '../../types';
 
 interface StatCardProps {
@@ -46,6 +47,8 @@ const AdminDashboard: React.FC = () => {
   const [seeding,   setSeeding]   = useState(false);
   const [seedMsg,   setSeedMsg]   = useState('');
   const [seedError, setSeedError] = useState('');
+  const [paymentReply, setPaymentReply] = useState('');
+  const [copied,    setCopied]    = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -54,9 +57,21 @@ const AdminDashboard: React.FC = () => {
       setCatCount(cats.length);
       setLoading(false);
     });
+    getSiteSettings().then((s) => setPaymentReply(s.paymentReplyMessage ?? ''));
   };
 
   useEffect(() => { load(); }, []);
+
+  const copyPaymentReply = async () => {
+    if (!paymentReply) return;
+    try {
+      await navigator.clipboard.writeText(paymentReply);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard blocked — ignore */
+    }
+  };
 
   const handleSeed = async () => {
     setSeeding(true);
@@ -80,8 +95,27 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Safe: adds only missing sample items, never deletes or overwrites your edits.
+  const handleSync = async () => {
+    setSeeding(true);
+    setSeedMsg('');
+    setSeedError('');
+    try {
+      const results = await syncNewSeedItems();
+      setSeedMsg(results.join(' · '));
+      load();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setSeedError('Sync failed: ' + msg);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  // Destructive: full factory reset. Wipes ALL products/categories incl. your edits.
   const handleClearReseed = async () => {
-    if (!confirm('This will DELETE all current products & categories and add fresh sample data. Continue?')) return;
+    if (!confirm('⚠️ FACTORY RESET\n\nThis DELETES every product and category — including all prices and edits you made in the admin — and replaces them with the original sample data.\n\nThis cannot be undone. Are you sure?')) return;
+    if (!confirm('Last check: your edited prices WILL be lost. Type OK on the next screen only if you really want a full reset.\n\nContinue?')) return;
     setSeeding(true);
     setSeedMsg('');
     setSeedError('');
@@ -102,10 +136,10 @@ const AdminDashboard: React.FC = () => {
   const recent     = products.slice(0, 5);
 
   const QUICK_ACTIONS = [
-    { to: '/admin/products/new', icon: <FiPlusCircle size={18} />, label: 'Add Product',       color: 'var(--pn-primary)' },
+    { to: '/admin/products/new', icon: <FiPlusCircle size={18} />, label: 'Add Work',          color: 'var(--pn-primary)' },
     { to: '/admin/categories',   icon: <FiTag size={18} />,        label: 'Manage Categories', color: '#0062cc' },
     { to: '/admin/settings',     icon: <FiSettings size={18} />,   label: 'Site Settings',     color: '#6c5ce7' },
-    { to: '/',                   icon: <FiEye size={18} />,        label: 'View Store',         color: '#25D366', target: '_blank' },
+    { to: '/preview/shop',       icon: <FiEye size={18} />,        label: 'Preview Shop',      color: '#25D366', target: '_blank' },
   ];
 
   return (
@@ -113,9 +147,39 @@ const AdminDashboard: React.FC = () => {
       <div className="mb-4">
         <h4 className="fw-bold mb-1">Dashboard</h4>
         <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>
-          Welcome back! Here is what is happening with your store.
+          Welcome back! Here is what is happening with your studio.
         </p>
       </div>
+
+      {/* ── Quick: Copy Payment Message ─────────────────── */}
+      {paymentReply && (
+        <div
+          className="rounded-4 p-3 mb-4 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3"
+          style={{ backgroundColor: '#e8f5e9', border: '1px solid #c8e6c9' }}
+        >
+          <div>
+            <p className="fw-bold mb-1" style={{ fontSize: '0.9rem', color: '#2e7d32' }}>
+              <FaWhatsapp className="me-1" /> Payment Reply — ready to send
+            </p>
+            <p className="text-muted mb-0" style={{ fontSize: '0.78rem' }}>
+              After confirming an order, copy this and paste it in WhatsApp to share your UPI details.
+              <Link to="/admin/settings" style={{ marginLeft: 6, color: '#1565c0', fontWeight: 600 }}>Edit</Link>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={copyPaymentReply}
+            className="btn d-flex align-items-center gap-2 flex-shrink-0"
+            style={{
+              backgroundColor: copied ? '#2e7d32' : '#25D366', color: '#fff',
+              border: 'none', fontWeight: 700, fontSize: '0.85rem',
+              padding: '9px 18px', borderRadius: 9,
+            }}
+          >
+            {copied ? <><FiCheckCircle size={16} /> Copied!</> : <><FiCopy size={16} /> Copy Payment Message</>}
+          </button>
+        </div>
+      )}
 
       {/* ── Seed Banner ─────────────────────────────────── */}
       {(products.length === 0 || catCount === 0) && !loading && (
@@ -128,7 +192,7 @@ const AdminDashboard: React.FC = () => {
               📦 No data found in Firestore
             </p>
             <p className="text-muted mb-0" style={{ fontSize: '0.82rem' }}>
-              Click "Load Sample Data" to add 12 products, 9 categories and site settings automatically.
+              Click "Load Sample Data" to add sample 3D printing works, categories and site settings automatically.
               Make sure Firestore rules are published first.
             </p>
             {seedError && (
@@ -160,7 +224,7 @@ const AdminDashboard: React.FC = () => {
       {/* ── Stats ─────────────────────────────────────────── */}
       <Row className="g-3 mb-4">
         <Col xs={12} sm={6} xl={3}>
-          <StatCard icon={<FiPackage size={22} />} label="Total Products" value={loading ? '–' : products.length} color="var(--pn-primary)" />
+          <StatCard icon={<FiPackage size={22} />} label="Total Works" value={loading ? '–' : products.length} color="var(--pn-primary)" />
         </Col>
         <Col xs={12} sm={6} xl={3}>
           <StatCard icon={<FiTag size={22} />} label="Categories" value={loading ? '–' : catCount} color="#0062cc" />
@@ -178,7 +242,7 @@ const AdminDashboard: React.FC = () => {
         <Col lg={8}>
           <div className="bg-white rounded-4 p-4" style={{ border: '1px solid #f0f1f5', boxShadow: 'var(--pn-shadow-xs)' }}>
             <div className="d-flex align-items-center justify-content-between mb-3">
-              <h6 className="fw-bold mb-0">Recent Products</h6>
+              <h6 className="fw-bold mb-0">Recent Works</h6>
               <Link to="/admin/products" style={{ fontSize: '0.82rem', color: 'var(--pn-primary)', fontWeight: 600 }}>
                 View All →
               </Link>
@@ -190,8 +254,8 @@ const AdminDashboard: React.FC = () => {
               </div>
             ) : recent.length === 0 ? (
               <p className="text-muted text-center py-4 mb-0" style={{ fontSize: '0.875rem' }}>
-                No products yet. Click "Load Sample Data" above or{' '}
-                <Link to="/admin/products/new">add a product →</Link>
+                No works yet. Click "Load Sample Data" above or{' '}
+                <Link to="/admin/products/new">add a work →</Link>
               </p>
             ) : (
               <div className="table-responsive">
@@ -263,16 +327,31 @@ const AdminDashboard: React.FC = () => {
               ))}
             </div>
 
-            {/* Clear & re-seed button — removes duplicates */}
+            {/* Catalog data tools */}
             <div className="mt-3 pt-3" style={{ borderTop: '1px solid #f0f1f5' }}>
+              {/* SAFE — add only new sample items, keeps your edits */}
+              <button
+                onClick={handleSync}
+                disabled={seeding}
+                className="btn w-100 d-flex align-items-center justify-content-center gap-2"
+                style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: 'none', fontWeight: 700, fontSize: '0.82rem', height: 40, borderRadius: 8 }}
+              >
+                {seeding ? <><span className="spinner-border spinner-border-sm" /> Working…</> : <><FiDatabase size={14} /> Sync New Sample Items</>}
+              </button>
+              <p className="text-center mt-1 mb-0" style={{ fontSize: '0.7rem', color: '#8a8f99' }}>
+                Adds missing sample products only · never deletes or changes your prices
+              </p>
+
+              {/* DESTRUCTIVE — full factory reset, de-emphasized */}
               <button
                 onClick={handleClearReseed}
                 disabled={seeding}
-                className="btn w-100 d-flex align-items-center justify-content-center gap-2"
-                style={{ backgroundColor: '#fdecea', color: '#c62828', border: 'none', fontWeight: 600, fontSize: '0.8rem', height: 38, borderRadius: 8 }}
+                className="btn w-100 d-flex align-items-center justify-content-center gap-2 mt-3"
+                style={{ backgroundColor: 'transparent', color: '#c62828', border: '1px solid #f3cfcc', fontWeight: 600, fontSize: '0.74rem', height: 34, borderRadius: 8 }}
               >
-                {seeding ? <><span className="spinner-border spinner-border-sm" /> Working…</> : <><FiDatabase size={14} /> Clear Duplicates &amp; Reseed</>}
+                <FiDatabase size={12} /> Factory Reset (deletes all edits)
               </button>
+
               {seedMsg && <p className="text-center mt-2 mb-0" style={{ fontSize: '0.78rem', color: '#2e7d32', fontWeight: 600 }}>✓ {seedMsg}</p>}
               {seedError && <p className="text-center mt-2 mb-0" style={{ fontSize: '0.78rem', color: '#c62828' }}>⚠️ {seedError}</p>}
             </div>

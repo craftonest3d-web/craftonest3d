@@ -1,5 +1,5 @@
 /**
- * PaperNest – Auth Context
+ * CRAFTONEST3D – Auth Context
  * Wraps Firebase Authentication and exposes user + helpers to the admin panel.
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';

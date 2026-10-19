@@ -1,0 +1,276 @@
+/* =====================================================
+   CRAFTONEST3D – Home Page Catchy Animations
+   ===================================================== */
+
+/* ── Entrance: fade up with stagger ─────────────────── */
+@keyframes c3dFadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes c3dFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes c3dZoomIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.c3d-animate-up    { animation: c3dFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+.c3d-delay-1 { animation-delay: 0.1s; }
+.c3d-delay-2 { animation-delay: 0.25s; }
+.c3d-delay-3 { animation-delay: 0.4s; }
+.c3d-delay-4 { animation-delay: 0.55s; }
+.c3d-delay-5 { animation-delay: 0.7s; }
+
+/* ── Gradient shimmer text (hero title) ─────────────── */
+@keyframes c3dShimmerText {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.c3d-gold-shimmer {
+  background: linear-gradient(90deg, #d4af37 0%, #f7e588 25%, #d4af37 50%, #f7e588 75%, #d4af37 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: c3dShimmerText 4s linear infinite;
+}
+
+/* ── Floating gentle bob ────────────────────────────── */
+@keyframes c3dFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+.c3d-float { animation: c3dFloat 4s ease-in-out infinite; }
+
+/* ── Glow pulse (buttons / badges) ──────────────────── */
+@keyframes c3dGlowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.45); }
+  50%      { box-shadow: 0 0 0 14px rgba(212,175,55,0); }
+}
+.c3d-glow-pulse { animation: c3dGlowPulse 2.4s ease-out infinite; }
+
+/* ── Badge shine sweep ──────────────────────────────── */
+.c3d-shine {
+  position: relative;
+  overflow: hidden;
+}
+.c3d-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -120%;
+  width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  animation: c3dShine 3.5s ease-in-out infinite;
+}
+@keyframes c3dShine {
+  0%   { left: -120%; }
+  60%  { left: 140%; }
+  100% { left: 140%; }
+}
+
+/* ── Scroll reveal (fires when element enters view) ──── */
+@keyframes c3dReveal {
+  from { opacity: 0; transform: translateY(50px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@supports (animation-timeline: view()) {
+  .c3d-reveal {
+    animation: c3dReveal 0.8s cubic-bezier(0.16,1,0.3,1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 45%;
+  }
+}
+
+/* ── Section title underline grow ───────────────────── */
+@keyframes c3dUnderline {
+  from { width: 0; }
+  to   { width: 60px; }
+}
+.c3d-title-line::after {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, #d4af37, #f7e588);
+  border-radius: 3px;
+  margin: 12px auto 0;
+  animation: c3dUnderline 1s ease 0.3s both;
+}
+
+/* ── Card lift on hover (already inline, this is extra) ── */
+@keyframes c3dPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.c3d-pop:hover { animation: c3dPop 0.4s ease; }
+
+/* ── Rotating conic glow behind hero printer ────────── */
+@keyframes c3dSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.c3d-conic-glow {
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(212,175,55,0.12) 25%, transparent 50%, rgba(212,175,55,0.12) 75%, transparent 100%);
+  animation: c3dSpin 12s linear infinite;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+/* ── Count-up stat emphasis ─────────────────────────── */
+@keyframes c3dPopIn {
+  0%   { opacity: 0; transform: scale(0.6); }
+  70%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.c3d-popin { animation: c3dPopIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* ── Bouncing scroll hint ───────────────────────────── */
+@keyframes c3dBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%      { transform: translateY(8px); opacity: 1; }
+}
+.c3d-bounce { animation: c3dBounce 1.6s ease-in-out infinite; }
+
+/* ── Catchy action buttons ──────────────────────────── */
+.c3d-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.18s ease, filter 0.18s ease;
+  will-change: transform;
+}
+.c3d-btn:hover:not(.c3d-btn--disabled) {
+  transform: translateY(-3px) scale(1.015);
+  filter: brightness(1.05);
+}
+.c3d-btn:active:not(.c3d-btn--disabled) {
+  transform: translateY(-1px) scale(0.99);
+}
+/* Shine sweep on hover only */
+.c3d-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -140%;
+  width: 55%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+.c3d-btn:hover:not(.c3d-btn--disabled)::before { left: 150%; }
+.c3d-btn--disabled { cursor: not-allowed; }
+
+/* Gold button lift shadow */
+.c3d-btn--gold:hover:not(.c3d-btn--disabled) {
+  box-shadow: 0 10px 26px rgba(212,175,55,0.45);
+}
+/* WhatsApp green glow + gentle idle pulse */
+.c3d-btn--wa { animation: c3dWaPulse 2.6s ease-in-out infinite; }
+.c3d-btn--wa:hover:not(.c3d-btn--disabled) {
+  box-shadow: 0 10px 26px rgba(37,211,102,0.5);
+  animation: none;
+}
+@keyframes c3dWaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37,211,102,0.4); }
+  50%      { box-shadow: 0 0 0 10px rgba(37,211,102,0); }
+}
+
+/* ── Respect reduced motion ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .c3d-animate-up, .c3d-gold-shimmer, .c3d-float, .c3d-glow-pulse,
+  .c3d-shine::after, .c3d-reveal, .c3d-title-line::after,
+  .c3d-conic-glow, .c3d-popin, .c3d-bounce,
+  .c3d-btn, .c3d-btn::before, .c3d-btn--wa {
+    animation: none !important;
+    transition: none !important;
+  }
+  .c3d-btn:hover { transform: none !important; }
+}
+
+/* =====================================================
+   CRAFTONEST3D – Festival Greeting
+   ===================================================== */
+.c3d-festival-card {
+  animation: c3dFestPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes c3dFestPop {
+  0%   { opacity: 0; transform: scale(0.8) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.c3d-festival-banner { animation: c3dFadeIn 0.6s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .c3d-festival-card, .c3d-festival-banner { animation: none !important; }
+}
+
+/* =====================================================
+   CRAFTONEST3D – Scrolling Announcement Marquee
+   ===================================================== */
+.c3d-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.c3d-marquee__track {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;              /* start off-screen on the right */
+  animation:
+    c3dMarquee 22s linear infinite,
+    c3dAdFlash 1.6s ease-in-out infinite;   /* attention-grabbing flash */
+  will-change: transform;
+}
+.c3d-marquee:hover .c3d-marquee__track {
+  animation-play-state: paused;    /* pause on hover so people can read */
+}
+@keyframes c3dMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+/* Gentle colour + glow pulse so offers flash attractively */
+@keyframes c3dAdFlash {
+  0%, 100% {
+    color: var(--pn-primary);
+    text-shadow: 0 0 0 rgba(212,175,55,0);
+  }
+  50% {
+    color: #ffe488;
+    text-shadow: 0 0 10px rgba(255,228,136,0.75), 0 0 18px rgba(212,175,55,0.45);
+  }
+}
+/* Whole bar: soft background shimmer */
+.c3d-adbar {
+  position: relative;
+  overflow: hidden;
+  animation: c3dAdBarGlow 3s ease-in-out infinite;
+}
+@keyframes c3dAdBarGlow {
+  0%, 100% { box-shadow: inset 0 0 0 rgba(212,175,55,0); }
+  50%      { box-shadow: inset 0 -2px 14px rgba(212,175,55,0.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c3d-marquee__track { animation: none; padding-left: 0; }
+  .c3d-adbar { animation: none; }
+}
+
+/* =====================================================
+   CRAFTONEST3D – Mobile Bottom Nav
+   ===================================================== */
+.c3d-mobile-nav { display: flex; }
+
+/* Hide bottom nav on tablet/desktop */
+@media (min-width: 992px) {
+  .c3d-mobile-nav { display: none !important; }
+}
+
+/* On mobile, add bottom padding so footer/content clears the nav bar,
+   and lift the floating WhatsApp + scroll-top buttons above it */
+@media (max-width: 991.98px) {
+  body { padding-bottom: 64px; }
+  .floating-whatsapp { bottom: 80px !important; }
+}

@@ -1,13 +1,13 @@
 /**
- * PaperNest – Contact Page
- * Sections: Hero → Contact Info Cards → Map Placeholder → Contact Form
+ * CRAFTONEST3D – Contact Page
+ * Sections: Hero → Contact Info Cards → WhatsApp Banner → Map + Form
  */
 import React, { useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FiMail, FiMapPin, FiPhone, FiClock, FiSend, FiMessageSquare } from 'react-icons/fi';
+import { FiMail, FiPhone, FiSend, FiMessageSquare } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
-import { DEFAULT_SETTINGS } from '../../services/settingsService';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
 
 interface FormState {
   name: string;
@@ -24,7 +24,7 @@ export const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const { storePhone, storeEmail, storeAddress, businessHours, whatsappNumber } = DEFAULT_SETTINGS;
+  const { storePhone, storeEmail, whatsappNumber, contactHeading, contactSubheading } = useSiteSettings();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -34,7 +34,7 @@ export const Contact: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    // Simulate async submit (replace with Firestore addDoc call)
+    // Simulate async submit
     setTimeout(() => {
       setSubmitting(false);
       setSubmitted(true);
@@ -42,7 +42,7 @@ export const Contact: React.FC = () => {
     }, 800);
   };
 
-  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi PaperNest! I'd like to get in touch. My name is ${form.name || '...'}.`)}`;
+  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi CRAFTONEST3D! I'd like to get in touch. My name is ${form.name || '...'}.`)}`;
 
   const INFO_CARDS = [
     {
@@ -66,13 +66,6 @@ export const Contact: React.FC = () => {
       sub: 'Quickest way to reach us',
       href: `https://wa.me/${whatsappNumber}`,
     },
-    {
-      icon: <FiMapPin size={20} />,
-      title: 'Visit Us',
-      content: storeAddress,
-      sub: businessHours,
-      href: '#map',
-    },
   ];
 
   return (
@@ -81,15 +74,14 @@ export const Contact: React.FC = () => {
       <div className="page-hero" aria-label="Contact page header">
         <Container>
           <div className="text-center">
-            <h1 className="fw-bold mb-2" style={{ fontSize: '2.25rem' }}>Get in Touch</h1>
-            <p className="text-muted mb-0" style={{ maxWidth: 480, margin: '0 auto', fontSize: '0.95rem', lineHeight: 1.7 }}>
-              Have a question about our products or want to place a custom order?
-              We'd love to hear from you!
+            <h1 className="fw-bold mb-2" style={{ fontSize: '2.25rem', color: 'var(--pn-text-dark)' }}>{contactHeading}</h1>
+            <p className="mb-0" style={{ maxWidth: 520, margin: '0 auto', fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--pn-text-muted)' }}>
+              {contactSubheading}
             </p>
             <nav aria-label="Breadcrumb" className="mt-3">
               <ol className="breadcrumb justify-content-center mb-0" style={{ fontSize: '0.82rem' }}>
-                <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-                <li className="breadcrumb-item active">Contact</li>
+                <li className="breadcrumb-item"><Link to="/" style={{ color: 'var(--pn-text-muted)' }}>Home</Link></li>
+                <li className="breadcrumb-item active" style={{ color: 'var(--pn-text-muted)' }}>Contact</li>
               </ol>
             </nav>
           </div>
@@ -97,7 +89,7 @@ export const Contact: React.FC = () => {
       </div>
 
       {/* ── Contact Info Cards ────────────────────────── */}
-      <section className="py-5 bg-white" aria-label="Contact information">
+      <section className="py-5" style={{ backgroundColor: 'var(--pn-bg-paper)' }} aria-label="Contact information">
         <Container>
           <Row className="g-4 mb-5">
             {INFO_CARDS.map((card, i) => (
@@ -122,7 +114,7 @@ export const Contact: React.FC = () => {
                     <p className="mb-1" style={{ fontSize: '0.875rem', color: 'var(--pn-text-dark)', fontWeight: 500, wordBreak: 'break-word' }}>
                       {card.content}
                     </p>
-                    <p className="text-muted mb-0" style={{ fontSize: '0.78rem' }}>{card.sub}</p>
+                    <p className="mb-0" style={{ fontSize: '0.78rem', color: 'var(--pn-text-muted)' }}>{card.sub}</p>
                   </div>
                 </a>
               </Col>
@@ -132,7 +124,7 @@ export const Contact: React.FC = () => {
           {/* ── WhatsApp Banner ──────────────────────────── */}
           <div
             className="rounded-4 p-4 mb-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4"
-            style={{ backgroundColor: '#e8f8ee', border: '1px solid rgba(37,211,102,0.2)' }}
+            style={{ backgroundColor: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.2)' }}
           >
             <div className="d-flex align-items-center gap-3">
               <div
@@ -146,13 +138,13 @@ export const Contact: React.FC = () => {
                 <h5 className="fw-bold mb-1" style={{ fontSize: '1.1rem', color: 'var(--pn-text-dark)' }}>
                   Prefer WhatsApp?
                 </h5>
-                <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>
-                  Chat with us directly for the fastest response. Place orders, track enquiries, get support.
+                <p className="mb-0" style={{ fontSize: '0.875rem', color: 'var(--pn-text-muted)' }}>
+                  Chat with us directly for the fastest response. Share your idea, get a quote, discuss details.
                 </p>
               </div>
             </div>
             <a
-              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi PaperNest! I have a question.')}`}
+              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi CRAFTONEST3D! I have a 3D printing enquiry.')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn px-4 py-2 fw-bold rounded-3 d-flex align-items-center gap-2"
@@ -162,46 +154,10 @@ export const Contact: React.FC = () => {
             </a>
           </div>
 
-          {/* ── Map + Form ───────────────────────────────── */}
+          {/* ── Contact Form (full width) ────────────── */}
           <Row className="g-5">
-            {/* Map Placeholder */}
-            <Col lg={5}>
-              <h2 className="section-title mb-4" style={{ fontSize: '1.5rem' }}>Find Us</h2>
-              <div
-                className="rounded-4 overflow-hidden mb-4"
-                style={{ height: 260, backgroundColor: '#e8eaf0', border: '1px solid #e0e3ea', position: 'relative' }}
-                role="img"
-                aria-label="Store location map placeholder"
-              >
-                <div className="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2">
-                  <FiMapPin size={36} style={{ color: 'var(--pn-primary)' }} />
-                  <p className="fw-semibold mb-1" style={{ fontSize: '0.9rem' }}>Google Map</p>
-                  <p style={{ fontSize: '0.8rem', textAlign: 'center', maxWidth: 200 }}>
-                    Embed your Google Map here by replacing this placeholder.
-                  </p>
-                </div>
-              </div>
-              <ul className="list-unstyled d-flex flex-column gap-3">
-                <li className="d-flex align-items-start gap-3">
-                  <FiMapPin size={17} style={{ color: 'var(--pn-primary)', marginTop: 2, flexShrink: 0 }} />
-                  <div>
-                    <p className="fw-bold mb-0" style={{ fontSize: '0.875rem' }}>Address</p>
-                    <p className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{storeAddress}</p>
-                  </div>
-                </li>
-                <li className="d-flex align-items-start gap-3">
-                  <FiClock size={17} style={{ color: 'var(--pn-primary)', marginTop: 2, flexShrink: 0 }} />
-                  <div>
-                    <p className="fw-bold mb-0" style={{ fontSize: '0.875rem' }}>Business Hours</p>
-                    <p className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{businessHours}</p>
-                  </div>
-                </li>
-              </ul>
-            </Col>
-
-            {/* Contact Form */}
-            <Col lg={7}>
-              <h2 className="section-title mb-4" style={{ fontSize: '1.5rem' }}>
+            <Col lg={8} className="mx-auto">
+              <h2 className="section-title mb-4" style={{ fontSize: '1.5rem', color: 'var(--pn-text-dark)' }}>
                 <FiMessageSquare size={22} className="me-2" style={{ color: 'var(--pn-primary)' }} />
                 Send Us a Message
               </h2>
@@ -209,12 +165,12 @@ export const Contact: React.FC = () => {
               {submitted ? (
                 <div
                   className="rounded-4 p-5 text-center"
-                  style={{ backgroundColor: '#e8f8ee', border: '1px solid rgba(37,211,102,0.2)' }}
+                  style={{ backgroundColor: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.2)' }}
                 >
                   <FiSend size={40} style={{ color: '#25D366' }} className="mb-3" />
-                  <h4 className="fw-bold mb-2">Message Sent Successfully!</h4>
-                  <p className="text-muted mb-4">
-                    Thank you for reaching out. We'll get back to you within 24 hours.
+                  <h4 className="fw-bold mb-2" style={{ color: 'var(--pn-text-dark)' }}>Message Sent Successfully!</h4>
+                  <p className="mb-4" style={{ color: 'var(--pn-text-muted)' }}>
+                    Thank you for reaching out. We'll get back to you soon.
                   </p>
                   <button className="btn btn-pink" onClick={() => setSubmitted(false)}>
                     Send Another Message
@@ -223,20 +179,20 @@ export const Contact: React.FC = () => {
               ) : (
                 <Form
                   onSubmit={handleSubmit}
-                  className="bg-white p-4 rounded-4"
-                  style={{ border: '1px solid #f0f1f5', boxShadow: 'var(--pn-shadow-xs)' }}
+                  className="p-4 rounded-4"
+                  style={{ backgroundColor: 'var(--pn-bg-pink-light)', border: '1px solid #2a2a2a' }}
                   noValidate
                 >
                   <Row className="g-3">
                     <Col sm={6}>
                       <Form.Group controlId="contactName">
-                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>
+                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem', color: 'var(--pn-text-dark)' }}>
                           Your Name <span style={{ color: 'var(--pn-primary)' }}>*</span>
                         </Form.Label>
                         <Form.Control
                           type="text"
                           name="name"
-                          placeholder="Priya Sharma"
+                          placeholder="Your name"
                           value={form.name}
                           onChange={handleChange}
                           required
@@ -246,13 +202,13 @@ export const Contact: React.FC = () => {
                     </Col>
                     <Col sm={6}>
                       <Form.Group controlId="contactEmail">
-                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>
+                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem', color: 'var(--pn-text-dark)' }}>
                           Email Address <span style={{ color: 'var(--pn-primary)' }}>*</span>
                         </Form.Label>
                         <Form.Control
                           type="email"
                           name="email"
-                          placeholder="priya@example.com"
+                          placeholder="you@example.com"
                           value={form.email}
                           onChange={handleChange}
                           required
@@ -262,7 +218,7 @@ export const Contact: React.FC = () => {
                     </Col>
                     <Col sm={6}>
                       <Form.Group controlId="contactPhone">
-                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>
+                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem', color: 'var(--pn-text-dark)' }}>
                           Phone Number
                         </Form.Label>
                         <Form.Control
@@ -277,7 +233,7 @@ export const Contact: React.FC = () => {
                     </Col>
                     <Col sm={6}>
                       <Form.Group controlId="contactSubject">
-                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>
+                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem', color: 'var(--pn-text-dark)' }}>
                           Subject
                         </Form.Label>
                         <Form.Select
@@ -288,25 +244,25 @@ export const Contact: React.FC = () => {
                           aria-label="Select subject"
                         >
                           <option value="">Select a topic…</option>
-                          <option value="Order Enquiry">Order Enquiry</option>
-                          <option value="Custom Order">Custom / Personalized Order</option>
-                          <option value="Bulk Order">Bulk / Wholesale Order</option>
-                          <option value="Shipping">Shipping &amp; Delivery</option>
-                          <option value="Returns">Returns &amp; Refunds</option>
+                          <option value="Custom Order">Custom 3D Print Order</option>
+                          <option value="Personalized">Personalized Product</option>
+                          <option value="Prototype">Prototype Enquiry</option>
+                          <option value="Bulk">Bulk / Multiple Prints</option>
+                          <option value="Quote">Get a Quote</option>
                           <option value="Other">Other</option>
                         </Form.Select>
                       </Form.Group>
                     </Col>
                     <Col xs={12}>
                       <Form.Group controlId="contactMessage">
-                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem' }}>
+                        <Form.Label className="fw-semibold" style={{ fontSize: '0.875rem', color: 'var(--pn-text-dark)' }}>
                           Message <span style={{ color: 'var(--pn-primary)' }}>*</span>
                         </Form.Label>
                         <Form.Control
                           as="textarea"
                           rows={4}
                           name="message"
-                          placeholder="How can we help you? Tell us about your requirement…"
+                          placeholder="Tell us about your idea — what would you like to 3D print?"
                           value={form.message}
                           onChange={handleChange}
                           required
@@ -343,7 +299,7 @@ export const Contact: React.FC = () => {
 
       {/* ── Floating WhatsApp ──────────────────────────── */}
       <a
-        href={`https://wa.me/${whatsappNumber}`}
+        href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="floating-whatsapp"

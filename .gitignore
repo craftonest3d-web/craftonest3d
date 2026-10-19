@@ -31,3 +31,10 @@ dist-ssr
 
 # Firebase
 .firebase/
+
+# Firebase Auth user export — contains password hashes, NEVER commit
+users.json
+*-users.json
+
+# Local working images (not used by the site build)
+/images/

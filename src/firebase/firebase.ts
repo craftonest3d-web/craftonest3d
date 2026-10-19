@@ -1,8 +1,9 @@
 /**
- * PaperNest – Firebase Initialisation
+ * CRAFTONEST3D – Firebase Initialisation
  * Free Spark plan: Auth + Firestore only.
  * Storage is NOT used (requires paid Blaze plan).
- * Product images are stored as external URLs (Unsplash, etc.)
+ * Product/work images are stored as external URLs (Unsplash, etc.)
+ * The existing Firebase project (papernest-a7ff4) is preserved.
  */
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';

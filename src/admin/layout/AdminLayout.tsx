@@ -1,28 +1,39 @@
 /**
- * PaperNest – Admin Layout
+ * CRAFTONEST3D – Admin Layout
  * Sidebar navigation + topbar + main content area.
  * Completely isolated from the public site layout.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { subscribeToOrders } from '../../services/orderService';
 import {
   FiGrid, FiPackage, FiTag, FiSettings, FiLogOut,
-  FiMenu, FiX, FiExternalLink, FiEdit,
+  FiMenu, FiX, FiExternalLink, FiEdit, FiShoppingCart,
 } from 'react-icons/fi';
 
 const NAV_ITEMS = [
-  { to: '/admin/dashboard',  icon: <FiGrid size={18} />,    label: 'Dashboard' },
-  { to: '/admin/products',   icon: <FiPackage size={18} />, label: 'Products' },
-  { to: '/admin/categories', icon: <FiTag size={18} />,     label: 'Categories' },
-  { to: '/admin/content',    icon: <FiEdit size={18} />,    label: 'Content' },
-  { to: '/admin/settings',   icon: <FiSettings size={18} />,label: 'Settings' },
+  { to: '/admin/dashboard',  icon: <FiGrid size={18} />,         label: 'Dashboard' },
+  { to: '/admin/orders',     icon: <FiShoppingCart size={18} />, label: 'Orders' },
+  { to: '/admin/products',   icon: <FiPackage size={18} />,      label: 'Works / Portfolio' },
+  { to: '/admin/categories', icon: <FiTag size={18} />,          label: 'Categories' },
+  { to: '/admin/content',    icon: <FiEdit size={18} />,         label: 'Content' },
+  { to: '/admin/settings',   icon: <FiSettings size={18} />,     label: 'Settings' },
 ];
 
 const AdminLayout: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    // Live badge — updates instantly on new orders / status changes.
+    const unsub = subscribeToOrders((orders) =>
+      setPendingCount(orders.filter((o) => o.status === 'pending').length),
+    );
+    return unsub;
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -40,10 +51,14 @@ const AdminLayout: React.FC = () => {
           style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: 'var(--pn-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           aria-hidden="true"
         >
-          <span style={{ fontSize: '1.1rem' }}>📦</span>
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+            <path d="M16 3 L28 9.5 L28 22.5 L16 29 L4 22.5 L4 9.5 Z" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinejoin="round" />
+            <path d="M4 9.5 L16 16 L28 9.5" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinejoin="round" />
+            <path d="M16 16 L16 29" fill="none" stroke="#0a0a0a" strokeWidth="2.5" />
+          </svg>
         </div>
         <div>
-          <p className="mb-0 fw-bold text-white" style={{ fontSize: '1rem', lineHeight: 1.1 }}>PaperNest</p>
+          <p className="mb-0 fw-bold text-white" style={{ fontSize: '1rem', lineHeight: 1.1, color: 'var(--pn-primary)' }}>CRAFTONEST3D</p>
           <p className="mb-0" style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.5px' }}>ADMIN PANEL</p>
         </div>
       </div>
@@ -70,7 +85,19 @@ const AdminLayout: React.FC = () => {
             onClick={() => setSidebarOpen(false)}
           >
             {icon}
-            {label}
+            <span className="flex-grow-1">{label}</span>
+            {to === '/admin/orders' && pendingCount > 0 && (
+              <span
+                style={{
+                  backgroundColor: '#e74c3c', color: '#fff', fontSize: '0.68rem',
+                  fontWeight: 800, minWidth: 20, height: 20, borderRadius: 10,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '0 6px',
+                }}
+              >
+                {pendingCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -95,7 +122,7 @@ const AdminLayout: React.FC = () => {
   );
 
   return (
-    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f4f5f7' }}>
+    <div className="d-flex admin-root" style={{ minHeight: '100vh', backgroundColor: '#f4f5f7' }}>
 
       {/* Desktop Sidebar */}
       <aside
@@ -139,18 +166,18 @@ const AdminLayout: React.FC = () => {
           </button>
 
           <p className="mb-0 fw-bold d-none d-lg-block" style={{ fontSize: '0.875rem', color: 'var(--pn-text-muted)' }}>
-            PaperNest Admin
+            CRAFTONEST3D Admin
           </p>
 
           <div className="d-flex align-items-center gap-3 ms-auto">
             <a
-              href="/"
+              href="/preview/shop"
               target="_blank"
               rel="noopener noreferrer"
               className="d-flex align-items-center gap-1 text-decoration-none"
-              style={{ fontSize: '0.8rem', color: 'var(--pn-text-muted)' }}
+              style={{ fontSize: '0.8rem', color: 'var(--pn-text-muted)', fontWeight: 600 }}
             >
-              <FiExternalLink size={14} /> View Store
+              <FiExternalLink size={14} /> View Shop
             </a>
             <button
               onClick={handleLogout}

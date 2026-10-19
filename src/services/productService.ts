@@ -1,5 +1,5 @@
 /**
- * PaperNest – Product Service (Firestore)
+ * CRAFTONEST3D – Product / Work Service (Firestore)
  * Collection: "products"
  *
  * NOTE on ordering: composite indexes (isFeatured + createdAt) must exist in
@@ -36,6 +36,12 @@ function toProduct(id: string, data: Record<string, unknown>): Product {
     image:           (data.image          as string)  ?? '',
     inStock:         (data.inStock        as boolean) ?? true,
     isFeatured:      (data.isFeatured     as boolean) ?? false,
+    isBulk:          (data.isBulk         as boolean) ?? false,
+    material:        (data.material       as string)  ?? undefined,
+    size:            (data.size           as string)  ?? undefined,
+    customOptions:   (data.customOptions  as import('../types').ProductCustomOption[] | undefined) ?? undefined,
+    sizePrices:         (data.sizePrices         as Record<string, number> | undefined) ?? undefined,
+    sizeOriginalPrices: (data.sizeOriginalPrices as Record<string, number> | undefined) ?? undefined,
     whatsappMessage: (data.whatsappMessage as string | undefined),
     createdAt:
       data.createdAt instanceof Timestamp ? data.createdAt.toDate() : undefined,
@@ -150,9 +156,17 @@ export async function deleteProduct(id: string): Promise<void> {
 
 // ── WhatsApp URL builder ───────────────────────────────────────────────────
 
+/** Build a reliable WhatsApp URL. Cleans the number to digits only. */
+export function waUrl(whatsappNumber: string, message: string): string {
+  const num = (whatsappNumber || '').replace(/[^0-9]/g, '');
+  return `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
+}
+
 export function buildWhatsAppOrderUrl(product: Product, whatsappNumber: string): string {
+  const materialLine = product.material ? `\nMaterial: ${product.material}` : '';
+  const sizeLine = product.size ? `\nSize: ${product.size}` : '';
   const message =
     product.whatsappMessage ??
-    `Hi! I'd like to order:\n\n*${product.title}*\nPrice: \u20B9${product.price}\n\nPlease confirm availability.`;
-  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    `Hi CRAFTONEST3D! 👋\n\nI'm interested in this work:\n\n*${product.title}*\nCategory: ${product.categoryLabel}${materialLine}${sizeLine}\n\nI'd like to discuss a custom order. Could you share details?`;
+  return waUrl(whatsappNumber, message);
 }

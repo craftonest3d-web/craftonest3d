@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/globals.css';
 import './styles/responsive.css';
+import './styles/animations.css';
 
 // Auth context
 import { AuthProvider } from './contexts/AuthContext';
@@ -34,7 +35,7 @@ const missingVars = REQUIRED_ENV.filter((key) => {
 if (missingVars.length > 0) {
   document.getElementById('root')!.innerHTML = `
     <div style="font-family:monospace;max-width:680px;margin:60px auto;padding:32px;border:2px solid #ff4f7a;border-radius:12px;background:#fff0f3">
-      <h2 style="color:#ff4f7a;margin-top:0">⚠️ PaperNest – Firebase Setup Required</h2>
+      <h2 style="color:#ff4f7a;margin-top:0">⚠️ CRAFTONEST3D – Firebase Setup Required</h2>
       <p>The following environment variables are missing or contain placeholder values:</p>
       <ul style="color:#c62828">
         ${missingVars.map((v) => `<li><code>${v}</code></li>`).join('')}
@@ -56,17 +57,15 @@ VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX</pre>
         </li>
         <li>Restart the dev server: <code>npm run dev</code></li>
       </ol>
-      <p style="color:#5c677d;font-size:0.85rem">The project ID is <strong>papernest-a7ff4</strong>. Only the API key and sender/app IDs are unique — get them from the Firebase Console link above.</p>
+      <p style="color:#5c677d;font-size:0.85rem">The project ID is <strong>papernest-a7ff4</strong> (existing Firebase project is preserved). Only the API key and sender/app IDs are unique — get them from the Firebase Console link above.</p>
     </div>
   `;
 } else {
   // Config looks good — mount the app.
   // NOTE: seeding is now manual via Admin Dashboard "Load Sample Data" button
   // to prevent accidental duplicates on every reload.
-// Apply saved theme before render
-const savedTheme = localStorage.getItem('pn-theme') ?? 'pink';
-document.documentElement.setAttribute('data-theme', savedTheme);
-
+  // Clear the one-time chunk-reload guard once the app mounts successfully.
+  sessionStorage.removeItem('chunk-reload-once');
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <AuthProvider>

@@ -1,5 +1,5 @@
 /**
- * PaperNest – Admin Login
+ * CRAFTONEST3D – Admin Login
  * Firebase Email/Password authentication. No registration link.
  */
 import React, { useState, useEffect } from 'react';
@@ -52,25 +52,29 @@ const AdminLogin: React.FC = () => {
 
   return (
     <div
-      className="d-flex align-items-center justify-content-center min-vh-100"
-      style={{ background: 'linear-gradient(135deg, var(--pn-primary-bg) 0%, #fce4ec 100%)' }}
+      className="d-flex align-items-center justify-content-center min-vh-100 admin-root"
+      style={{ background: 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%)' }}
     >
       <div
         className="bg-white rounded-4 p-4 p-md-5 w-100"
-        style={{ maxWidth: 420, boxShadow: 'var(--pn-shadow-lg)' }}
+        style={{ maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
       >
         {/* Brand */}
         <div className="text-center mb-4">
           <div
             className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-3"
-            style={{ width: 56, height: 56, backgroundColor: 'var(--pn-primary)', fontSize: '1.6rem' }}
+            style={{ width: 56, height: 56, backgroundColor: 'var(--pn-primary)' }}
             aria-hidden="true"
           >
-            📦
+            <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+              <path d="M16 3 L28 9.5 L28 22.5 L16 29 L4 22.5 L4 9.5 Z" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinejoin="round" />
+              <path d="M4 9.5 L16 16 L28 9.5" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinejoin="round" />
+              <path d="M16 16 L16 29" fill="none" stroke="#0a0a0a" strokeWidth="2.5" />
+            </svg>
           </div>
-          <h4 className="fw-bold mb-1">PaperNest Admin</h4>
+          <h4 className="fw-bold mb-1">CRAFTONEST3D Admin</h4>
           <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>
-            Sign in to manage your store
+            Sign in to manage your studio
           </p>
         </div>
 
@@ -99,7 +103,7 @@ const AdminLogin: React.FC = () => {
                 id="admin-email"
                 type="email"
                 className="form-control border-start-0 ps-0"
-                placeholder="admin@papernest.in"
+                placeholder="admin@craftonest3d.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

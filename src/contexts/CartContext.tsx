@@ -1,16 +1,19 @@
 /**
- * PaperNest – Cart Context
- * WhatsApp-based cart: collect items → send one WhatsApp order message.
- * No payment, no checkout page — 100% consistent with the business model.
+ * CRAFTONEST3D – Cart Context
+ * Supports multiple items, each with their own customization details.
+ * Final order sent as one WhatsApp message.
  */
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import type { Product } from '../types';
+import type { Product, OrderItem } from '../types';
+import { createOrder } from '../services/orderService';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export interface CartItem {
+  id: string;           // unique cart item ID
   product: Product;
   quantity: number;
+  customizations: Record<string, string>; // { 'Your Name': 'Emma', 'Size': '4cm', ... }
 }
 
 interface CartState {
@@ -19,65 +22,52 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: 'ADD';    product: Product }
-  | { type: 'REMOVE'; id: string }
-  | { type: 'INC';    id: string }
-  | { type: 'DEC';    id: string }
+  | { type: 'ADD'; product: Product; quantity: number; customizations: Record<string, string> }
+  | { type: 'REMOVE'; cartId: string }
+  | { type: 'INC'; cartId: string }
+  | { type: 'DEC'; cartId: string }
   | { type: 'CLEAR' }
   | { type: 'TOGGLE_DRAWER' }
   | { type: 'OPEN_DRAWER' };
 
 interface CartContextValue {
-  items:       CartItem[];
-  isOpen:      boolean;
-  totalItems:  number;
-  totalPrice:  number;
-  addToCart:   (product: Product) => void;
-  removeFromCart: (id: string) => void;
-  increment:   (id: string) => void;
-  decrement:   (id: string) => void;
-  clearCart:   () => void;
-  toggleCart:  () => void;
-  openCart:    () => void;
-  orderOnWhatsApp: (whatsappNumber: string) => void;
+  items:            CartItem[];
+  isOpen:           boolean;
+  totalItems:       number;
+  addToCart:        (product: Product, quantity: number, customizations: Record<string, string>) => void;
+  removeFromCart:   (cartId: string) => void;
+  increment:        (cartId: string) => void;
+  decrement:        (cartId: string) => void;
+  clearCart:        () => void;
+  toggleCart:       () => void;
+  openCart:         () => void;
+  orderOnWhatsApp:  (whatsappNumber: string, codAvailable?: boolean) => void;
 }
 
 // ── Reducer ────────────────────────────────────────────────────────────────
 
 function reducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
-    case 'ADD': {
-      const exists = state.items.find((i) => i.product.id === action.product.id);
+    case 'ADD':
       return {
         ...state,
         isOpen: true,
-        items: exists
-          ? state.items.map((i) =>
-              i.product.id === action.product.id
-                ? { ...i, quantity: i.quantity + 1 }
-                : i,
-            )
-          : [...state.items, { product: action.product, quantity: 1 }],
+        items: [
+          ...state.items,
+          {
+            id: `${action.product.id}-${Date.now()}`,
+            product: action.product,
+            quantity: action.quantity,
+            customizations: action.customizations,
+          },
+        ],
       };
-    }
     case 'REMOVE':
-      return { ...state, items: state.items.filter((i) => i.product.id !== action.id) };
+      return { ...state, items: state.items.filter((i) => i.id !== action.cartId) };
     case 'INC':
-      return {
-        ...state,
-        items: state.items.map((i) =>
-          i.product.id === action.id ? { ...i, quantity: i.quantity + 1 } : i,
-        ),
-      };
+      return { ...state, items: state.items.map((i) => i.id === action.cartId ? { ...i, quantity: i.quantity + 1 } : i) };
     case 'DEC':
-      return {
-        ...state,
-        items: state.items
-          .map((i) =>
-            i.product.id === action.id ? { ...i, quantity: i.quantity - 1 } : i,
-          )
-          .filter((i) => i.quantity > 0),
-      };
+      return { ...state, items: state.items.map((i) => i.id === action.cartId ? { ...i, quantity: Math.max(1, i.quantity - 1) } : i) };
     case 'CLEAR':
       return { ...state, items: [] };
     case 'TOGGLE_DRAWER':
@@ -97,45 +87,101 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(reducer, { items: [], isOpen: false });
 
   const totalItems = state.items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalPrice = state.items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
 
-  const addToCart   = useCallback((p: Product)  => dispatch({ type: 'ADD',    product: p }), []);
-  const removeFromCart = useCallback((id: string) => dispatch({ type: 'REMOVE', id }),        []);
-  const increment   = useCallback((id: string)  => dispatch({ type: 'INC',    id }),          []);
-  const decrement   = useCallback((id: string)  => dispatch({ type: 'DEC',    id }),          []);
-  const clearCart   = useCallback(()            => dispatch({ type: 'CLEAR'  }),               []);
-  const toggleCart  = useCallback(()            => dispatch({ type: 'TOGGLE_DRAWER' }),        []);
-  const openCart    = useCallback(()            => dispatch({ type: 'OPEN_DRAWER' }),          []);
+  const addToCart = useCallback((product: Product, quantity: number, customizations: Record<string, string>) => {
+    dispatch({ type: 'ADD', product, quantity, customizations });
+  }, []);
 
-  const orderOnWhatsApp = useCallback((whatsappNumber: string) => {
+  const removeFromCart = useCallback((cartId: string) => dispatch({ type: 'REMOVE', cartId }), []);
+  const increment      = useCallback((cartId: string) => dispatch({ type: 'INC', cartId }),    []);
+  const decrement      = useCallback((cartId: string) => dispatch({ type: 'DEC', cartId }),    []);
+  const clearCart      = useCallback(()               => dispatch({ type: 'CLEAR' }),          []);
+  const toggleCart     = useCallback(()               => dispatch({ type: 'TOGGLE_DRAWER' }),  []);
+  const openCart       = useCallback(()               => dispatch({ type: 'OPEN_DRAWER' }),    []);
+
+  const orderOnWhatsApp = useCallback((whatsappNumber: string, codAvailable: boolean = false) => {
     if (state.items.length === 0) return;
 
-    const lines = state.items.map(
-      (i) => `• ${i.product.title} × ${i.quantity} — ₹${i.product.price * i.quantity}`,
-    );
-    const message = [
-      'Hi PaperNest! 👋 I\'d like to place an order:',
+    const hasFixedPrice = state.items.some(i => i.product.price > 0);
+    const totalPrice    = state.items.reduce((sum, i) => sum + (i.product.price * i.quantity), 0);
+
+    const lines: string[] = [
+      'Hi CRAFTONEST3D! 👋',
       '',
-      ...lines,
-      '',
-      `*Total: ₹${totalPrice}*`,
-      '',
-      'Please confirm availability and share payment details.',
-    ].join('\n');
+      'I would like to place an order:',
+      '─────────────────────────',
+    ];
+
+    state.items.forEach((item, idx) => {
+      lines.push(`*${idx + 1}. ${item.product.title}*`);
+      Object.entries(item.customizations).forEach(([key, val]) => {
+        if (val) lines.push(`   • ${key}: ${val}`);
+      });
+      lines.push(`   • Quantity: ${item.quantity}`);
+      if (item.product.price > 0) {
+        lines.push(`   • Price: ₹${item.product.price} × ${item.quantity} = ₹${item.product.price * item.quantity}`);
+      } else {
+        lines.push(`   • Price: Please quote`);
+      }
+      lines.push('');
+    });
+
+    lines.push('─────────────────────────');
+
+    if (hasFixedPrice && totalPrice > 0) {
+      lines.push(`*Total: ₹${totalPrice}* (+ courier charges)`);
+    } else {
+      lines.push(`*Total items: ${totalItems}*`);
+      lines.push('*Please confirm total price.*');
+    }
+
+    lines.push('');
+    lines.push('📦 *Shipping Details Required:*');
+    lines.push('Please reply with:');
+    lines.push('• Full Name:');
+    lines.push('• Phone Number:');
+    lines.push('• Full Address (Door No, Street, Area):');
+    lines.push('• City & State:');
+    lines.push('• PIN Code:');
+    lines.push('');
+    lines.push('💳 *Payment Options:*');
+    lines.push('• UPI — GPay / PhonePe / Paytm');
+    if (codAvailable) {
+      lines.push('• Cash on Delivery (COD) for select items');
+    } else {
+      lines.push('• *No Cash on Delivery*');
+    }
+    lines.push('');
+    lines.push('ℹ️ Custom/personalized items require advance payment before printing.');
+    lines.push('');
+    lines.push('🔒 Your address is only used for delivery and kept confidential.');
+    lines.push('');
+    lines.push('Kindly confirm the order and share the above details. Thank you! 🙏');
+
+    // Save order to history (admin-only) — fire-and-forget, never blocks WhatsApp.
+    const orderItems: OrderItem[] = state.items.map((item) => ({
+      title:     item.product.title,
+      quantity:  item.quantity,
+      unitPrice: item.product.price,
+      lineTotal: item.product.price * item.quantity,
+      options:   { ...item.customizations },
+    }));
+    const customerName =
+      state.items.map((i) => i.customizations['Name / Text'] || i.customizations['Name'] || '').find(Boolean) ?? '';
+    void createOrder({ customerName, items: orderItems, source: 'cart' });
 
     window.open(
-      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`,
       '_blank',
       'noopener,noreferrer',
     );
-  }, [state.items, totalPrice]);
+  }, [state.items, totalItems]);
 
   return (
     <CartContext.Provider value={{
       items: state.items,
       isOpen: state.isOpen,
       totalItems,
-      totalPrice,
       addToCart,
       removeFromCart,
       increment,

@@ -1,149 +1,121 @@
 /**
- * PaperNest – Home Page
- * Sections: Hero → Categories → Featured Products → Promo → Why Us → Testimonials → Newsletter
+ * CRAFTONEST3D – Home Page (v2 — improved readability & UX)
  */
-import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Row, Col, Carousel, Badge } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import {
-  FiChevronRight, FiStar, FiCheck, FiTruck,
-  FiSmile, FiTag, FiLayers, FiBookOpen, FiEdit3, FiGift,
-  FiHeart, FiMail, FiPackage, FiSend, FiShoppingCart,
+  FiChevronRight, FiLayers, FiTag, FiPrinter, FiBox,
+  FiZap, FiTool, FiTarget, FiUpload, FiMessageSquare, FiTruck,
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Product, SiteSettings } from '../../types';
 import { getFeaturedProducts, buildWhatsAppOrderUrl } from '../../services/productService';
 import { DEFAULT_SETTINGS, getSiteSettings } from '../../services/settingsService';
-import { useCart } from '../../contexts/CartContext';
+import { FestivalBanner } from '../../components/common/FestivalGreeting';
 
-const WA_NUMBER = DEFAULT_SETTINGS.whatsappNumber;
-
-// ── Category Data ──────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { id: 'stationery', name: 'School Stationery', icon: <FiBookOpen size={22} /> },
-  { id: 'stationery', name: 'Office Supplies',   icon: <FiEdit3 size={22} /> },
-  { id: 'gifts',      name: 'Personalized Gifts',icon: <FiGift size={22} /> },
-  { id: 'stickers',   name: 'Stickers',          icon: <FiHeart size={22} /> },
-  { id: 'prints',     name: 'Photo Prints',      icon: <FiMail size={22} /> },
-  { id: 'mugs',       name: 'Custom Mugs',       icon: <FiSmile size={22} /> },
-  { id: 'notebooks',  name: 'Diaries & Notebooks',icon: <FiLayers size={22} /> },
-  { id: 'giftboxes',  name: 'Gift Boxes',        icon: <FiPackage size={22} /> },
-  { id: 'cards',      name: 'Greeting Cards',    icon: <FiMail size={22} /> },
-  { id: 'stationery', name: 'Keychains',         icon: <FiTag size={22} /> },
+// ── Services ────────────────────────────────────────────────────────────────
+const SERVICES = [
+  { icon: <FiPrinter size={28} />, title: 'Custom 3D Printing',      desc: 'Turn your digital designs or ideas into physical 3D prints.' },
+  { icon: <FiTag size={28} />,     title: 'Personalized Products',    desc: 'Names, logos, initials and customized designs.' },
+  { icon: <FiLayers size={28} />,  title: 'Miniatures & Figurines',   desc: 'Custom characters, miniatures and collectible models.' },
+  { icon: <FiBox size={28} />,     title: 'Keychains',                desc: 'Personalized name and character keychains.' },
+  { icon: <FiZap size={28} />,     title: 'Toys & Models',            desc: 'Fun and creative 3D printed models and toys.' },
+  { icon: <FiTool size={28} />,    title: 'Functional Prints',        desc: 'Useful custom parts and practical objects.' },
+  { icon: <FiTarget size={28} />,  title: 'Prototypes',               desc: 'Quick physical prototypes for your concepts.' },
+  { icon: <FiZap size={28} />,     title: 'Custom Projects',          desc: 'Have something unique in mind? Let\'s create it.' },
 ];
 
-// ── USPs ───────────────────────────────────────────────────────────────────
-const USPS = [
-  { icon: <FiCheck size={22} />,   title: 'Premium Quality',    desc: 'Handpicked products that meet our quality standards.' },
-  { icon: <FiLayers size={22} />,  title: 'Wide Collection',    desc: 'Thousands of products across every stationery category.' },
-  { icon: <FiTag size={22} />,     title: 'Affordable Prices',  desc: 'Premium quality without the premium price tag.' },
-  { icon: <FiTruck size={22} />,   title: 'Fast Delivery',      desc: 'Quick and safe delivery right to your doorstep.' },
-  { icon: <FiSmile size={22} />,   title: '100% Satisfaction',  desc: 'Happy customers are our biggest achievement.' },
-  { icon: <FiGift size={22} />,    title: 'Personalization',    desc: 'Custom gifts tailored exactly to your wishes.' },
+// ── How It Works ─────────────────────────────────────────────────────────────
+const STEPS = [
+  { num: '01', icon: <FiUpload size={22} />,        title: 'Share Your Idea',      desc: 'Send us your concept, image, STL file or reference.' },
+  { num: '02', icon: <FiMessageSquare size={22} />, title: 'Discuss & Customize',  desc: 'We discuss size, material, colours and customization.' },
+  { num: '03', icon: <FiPrinter size={22} />,       title: 'We Print',             desc: 'Your model is prepared and 3D printed with care.' },
+  { num: '04', icon: <FiTruck size={22} />,         title: 'Ready to Deliver',     desc: 'Your finished creation is ready for pickup or delivery.' },
 ];
 
-// ── Testimonials ───────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  { name: 'Priya S.',  city: 'Mumbai',   stars: 5, text: 'Absolutely love the quality of stickers and the packaging was beautiful! Will order again.' },
-  { name: 'Aakash M.', city: 'Delhi',    stars: 5, text: "Ordered a custom mug for my mom's birthday – she loved it. Fast delivery, great service." },
-  { name: 'Riya K.',   city: 'Bangalore',stars: 5, text: 'The personalized photo frame was stunning. Exactly as described and delivered on time!' },
-  { name: 'Neha J.',   city: 'Pune',     stars: 5, text: 'Best stationery store online. The notebooks feel premium and the prices are very reasonable.' },
-];
-
-// ── Star Rating ────────────────────────────────────────────────────────────
-const StarRating: React.FC<{ rating: number; size?: number }> = ({ rating, size = 13 }) => (
-  <div className="d-flex text-warning" aria-label={`Rating: ${rating} out of 5`}>
-    {[1, 2, 3, 4, 5].map((s) => (
-      <FiStar
-        key={s}
-        size={size}
-        style={{ fill: s <= rating ? '#ffc107' : 'none', color: s <= rating ? '#ffc107' : '#ccc' }}
-      />
-    ))}
-  </div>
-);
-
-// ── Product Card ───────────────────────────────────────────────────────────
-const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
-  const { addToCart } = useCart();
-  return (
-  <div className="card-custom h-100" style={{ borderRadius: 'var(--pn-radius-md)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-    <div className="position-relative overflow-hidden" style={{ height: 200 }}>
+// ── Work Card ────────────────────────────────────────────────────────────────
+const WorkCard: React.FC<{ product: Product; waNumber: string }> = ({ product, waNumber }) => (
+  <div style={{
+    backgroundColor: '#1a1a1a',
+    border: '1px solid #2a2a2a',
+    borderRadius: 16,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'all 0.3s ease',
+    height: '100%',
+  }}
+    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#d4af37'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; }}
+    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#2a2a2a'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+  >
+    <div style={{ height: 200, overflow: 'hidden', position: 'relative' }}>
       <img
         src={product.image}
         alt={product.title}
-        className="img-zoom"
         loading="lazy"
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       />
       {product.badge && (
-        <div className={`card-badge badge-${product.badgeType}`}>{product.badge}</div>
+        <span style={{
+          position: 'absolute', top: 10, left: 10,
+          backgroundColor: '#d4af37', color: '#0a0a0a',
+          fontSize: '0.7rem', fontWeight: 700, padding: '3px 10px', borderRadius: 6,
+        }}>
+          {product.badge}
+        </span>
       )}
     </div>
-    <div className="p-3 d-flex flex-column flex-grow-1">
-      <p className="text-muted mb-1" style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+    <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+      <p style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#d4af37', marginBottom: 4 }}>
         {product.categoryLabel}
       </p>
-      <h6 className="fw-bold mb-2" style={{ fontSize: '0.875rem', lineHeight: 1.4, minHeight: 40 }}>
+      <h6 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff', marginBottom: 8, lineHeight: 1.4 }}>
         {product.title}
       </h6>
-      <div className="d-flex align-items-center gap-2 mb-2">
-        <StarRating rating={product.rating} />
-        <span className="text-muted" style={{ fontSize: '0.75rem' }}>({product.reviews})</span>
-      </div>
-      <div className="d-flex align-items-center gap-2 mb-3">
-        <span className="fw-bold fs-6">₹{product.price}</span>
-        {product.originalPrice > product.price && (
-          <span className="text-decoration-line-through text-muted" style={{ fontSize: '0.8rem' }}>
-            ₹{product.originalPrice}
-          </span>
-        )}
-        {product.originalPrice > product.price && (
-          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#ee5253' }}>
-            {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% off
-          </span>
-        )}
-      </div>
-      <div className="d-flex gap-2 mt-auto">
-        <a
-          href={buildWhatsAppOrderUrl(product, WA_NUMBER)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="whatsapp-order-btn flex-grow-1"
-          style={{ fontSize: '0.8rem' }}
-        >
-          <FaWhatsapp size={15} />
-          WhatsApp
-        </a>
-        <button
-          onClick={() => addToCart(product)}
-          className="btn border-0 d-flex align-items-center justify-content-center"
-          style={{
-            backgroundColor: 'var(--pn-primary-bg)',
-            color: 'var(--pn-primary)',
-            borderRadius: 'var(--pn-radius-sm)',
-            width: 40, height: 40, flexShrink: 0,
-            transition: 'all 0.2s ease',
-          }}
-          aria-label={`Add ${product.title} to cart`}
-          title="Add to cart"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--pn-primary)'; (e.currentTarget as HTMLElement).style.color = 'white'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--pn-primary-bg)'; (e.currentTarget as HTMLElement).style.color = 'var(--pn-primary)'; }}
-        >
-          <FiShoppingCart size={16} />
-        </button>
-      </div>
+      <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: '#b0b0b0', flexGrow: 1, marginBottom: 12 }}>
+        {product.description.length > 75 ? product.description.slice(0, 75) + '…' : product.description}
+      </p>
+      {(product.material || product.size) && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {product.material && (
+            <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 4, backgroundColor: '#111', color: '#b0b0b0', border: '1px solid #333' }}>
+              {product.material}
+            </span>
+          )}
+          {product.size && (
+            <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 4, backgroundColor: '#111', color: '#b0b0b0', border: '1px solid #333' }}>
+              {product.size}
+            </span>
+          )}
+        </div>
+      )}
+      <a
+        href={buildWhatsAppOrderUrl(product, waNumber)}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          backgroundColor: '#d4af37', color: '#0a0a0a',
+          padding: '0.55rem', borderRadius: 8,
+          fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0d060')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#d4af37')}
+      >
+        <FaWhatsapp size={16} /> Enquire Now
+      </a>
     </div>
   </div>
-  );
-};
+);
 
-// ── Home Component ─────────────────────────────────────────────────────────
+// ── Home ─────────────────────────────────────────────────────────────────────
 export const Home: React.FC = () => {
-  const [products,  setProducts]  = useState<Product[]>([]);
-  const [settings,  setSettings]  = useState<SiteSettings>(DEFAULT_SETTINGS);
-  const [email,     setEmail]     = useState('');
-  const [subscribed,setSubscribed] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
     getFeaturedProducts().then(setProducts);
@@ -151,249 +123,227 @@ export const Home: React.FC = () => {
   }, []);
 
   const WA = settings.whatsappNumber;
-  const h0 = settings.heroSlides?.[0] ?? DEFAULT_SETTINGS.heroSlides[0];
-  const h1 = settings.heroSlides?.[1] ?? DEFAULT_SETTINGS.heroSlides[1];
-  const p0 = settings.promoBanners?.[0] ?? DEFAULT_SETTINGS.promoBanners[0];
-  const p1 = settings.promoBanners?.[1] ?? DEFAULT_SETTINGS.promoBanners[1];
-
-  const handleSubscribe = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) { setSubscribed(true); setEmail(''); }
-  }, [email]);
+  const waHref = `https://wa.me/${WA}?text=${encodeURIComponent('Hi CRAFTONEST3D! I would like to get a quote for a custom 3D print.')}`;
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#0d0d0d' }}>
 
-      {/* ── 1. Hero Carousel ──────────────────────────────── */}
-      <section aria-label="Featured promotions">
-        <Carousel fade indicators controls={false} className="hero-carousel">
-          {/* Slide 1 */}
-          <Carousel.Item>
-            <div style={{ backgroundColor: h0.bgColor || 'var(--pn-primary-bg)', minHeight: 440 }} className="d-flex align-items-center">
-              <Container className="py-5">
-                <Row className="align-items-center gy-4">
-                  <Col md={6} className="animate-fade-up">
-                    <Badge className="mb-3 px-3 py-2"
-                      style={{ backgroundColor: '#ffe0e9', color: 'var(--pn-primary)', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>
-                      {h0.badge}
-                    </Badge>
-                    <h1 className="display-4 fw-bold mb-3" style={{ color: 'var(--pn-secondary)', lineHeight: 1.15 }}>
-                      {h0.heading}{' '}
-                      <span style={{ color: 'var(--pn-primary)' }}>{h0.headingHighlight}</span>
-                    </h1>
-                    <p className="lead text-muted mb-4 fs-6" style={{ maxWidth: 480, lineHeight: 1.7 }}>
-                      {h0.subtext}
-                    </p>
-                    <div className="d-flex gap-3 flex-wrap">
-                      <Link to={h0.buttonLink || '/products'} className="btn btn-pink">
-                        {h0.buttonText} <FiChevronRight size={16} />
-                      </Link>
-                      <a href={`https://wa.me/${WA}?text=${encodeURIComponent('Hi! I want to explore your products.')}`}
-                        target="_blank" rel="noopener noreferrer" className="btn btn-outline-pink">
-                        <FaWhatsapp size={16} /> Chat with Us
-                      </a>
-                    </div>
-                  </Col>
-                  <Col md={6} className="text-center">
-                    <img src={h0.image} alt="Hero"
-                      className="img-fluid rounded-4 shadow"
-                      style={{ maxHeight: 360, objectFit: 'cover', width: '90%' }} loading="eager" />
-                  </Col>
-                </Row>
-              </Container>
-            </div>
-          </Carousel.Item>
+      {/* Festival greeting banner (admin-controlled) */}
+      <FestivalBanner />
 
-          {/* Slide 2 */}
-          <Carousel.Item>
-            <div style={{ backgroundColor: h1.bgColor || '#e8f4ff', minHeight: 440 }} className="d-flex align-items-center">
-              <Container className="py-5">
-                <Row className="align-items-center gy-4">
-                  <Col md={6}>
-                    <Badge className="mb-3 px-3 py-2"
-                      style={{ backgroundColor: '#ddeeff', color: '#0062cc', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>
-                      {h1.badge}
-                    </Badge>
-                    <h1 className="display-4 fw-bold mb-3" style={{ color: 'var(--pn-secondary)', lineHeight: 1.15 }}>
-                      {h1.heading}{' '}
-                      <span style={{ color: 'var(--pn-primary)' }}>{h1.headingHighlight}</span>
-                    </h1>
-                    <p className="lead text-muted mb-4 fs-6" style={{ maxWidth: 480, lineHeight: 1.7 }}>
-                      {h1.subtext}
-                    </p>
-                    <Link to={h1.buttonLink || '/products?category=gifts'} className="btn btn-pink">
-                      {h1.buttonText} <FiChevronRight size={16} />
-                    </Link>
-                  </Col>
-                  <Col md={6} className="text-center">
-                    <img src={h1.image} alt="Hero slide 2"
-                      className="img-fluid rounded-4 shadow"
-                      style={{ maxHeight: 360, objectFit: 'cover', width: '90%' }} loading="lazy" />
-                  </Col>
-                </Row>
-              </Container>
-            </div>
-          </Carousel.Item>
-        </Carousel>
-      </section>
+      {/* ══════════════════════════════════════
+          1. HERO
+      ══════════════════════════════════════ */}
+      <section style={{
+        position: 'relative', overflow: 'hidden',
+        padding: '5rem 0 4rem',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0d0d0d 100%)',
+        borderBottom: '1px solid #222',
+      }}>
+        {/* Gold grid overlay */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          backgroundImage: 'linear-gradient(rgba(212,175,55,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.05) 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+        }} />
 
-      {/* ── 2. Category Icons ──────────────────────────────── */}
-      <section className="py-5 bg-white" aria-label="Product categories">
-        <Container>
-          <div className="text-center mb-4">
-            <h2 className="section-title">{settings.categoriesTitle}</h2>
-            <p className="section-subtitle mt-2">{settings.categoriesSubtext}</p>
-          </div>
-          <div className="d-flex align-items-center gap-2">
-            <div className="d-flex gap-4 overflow-hidden w-100 px-2 justify-content-center flex-wrap" role="list">
-              {CATEGORIES.map((cat, i) => (
-                <div key={i} role="listitem">
-                  <Link
-                    to={`/products?category=${cat.id}`}
-                    className="text-decoration-none d-flex flex-column align-items-center gap-2 category-circle-wrapper"
-                    aria-label={cat.name}
-                  >
-                    <div className="category-circle">{cat.icon}</div>
-                    <span className="cat-name">{cat.name}</span>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </section>
+        <Container style={{ position: 'relative' }}>
+          <Row className="align-items-center gy-5">
 
-      {/* ── 3. Featured Products ───────────────────────────── */}
-      <section className="py-5" style={{ backgroundColor: 'var(--pn-bg-section)' }} aria-label="Featured products">
-        <Container>
-          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-            <div>
-              <h2 className="section-title mb-1">✨ Featured Products</h2>
-              <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-                Handpicked bestsellers and new arrivals just for you.
+            {/* Left — Text */}
+            <Col lg={6}>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{
+                  display: 'inline-block', padding: '6px 16px', borderRadius: 50,
+                  backgroundColor: 'rgba(212,175,55,0.12)',
+                  border: '1px solid rgba(212,175,55,0.3)',
+                  color: '#d4af37', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '1px',
+                }} className="c3d-shine">
+                  ✨ CUSTOM 3D PRINTING STUDIO
+                </span>
+              </div>
+
+              <h1 className="c3d-animate-up c3d-delay-1" style={{
+                fontSize: 'clamp(3rem, 7vw, 5rem)',
+                fontWeight: 900, lineHeight: 1,
+                letterSpacing: '-2px', marginBottom: 12,
+                color: '#ffffff',
+              }}>
+                CRAFTONEST<span className="c3d-gold-shimmer">3D</span>
+              </h1>
+
+              <p className="c3d-animate-up c3d-delay-2" style={{
+                fontSize: 'clamp(1.2rem, 3vw, 1.6rem)',
+                fontWeight: 600, color: '#d4af37',
+                marginBottom: 20, letterSpacing: '0.5px',
+              }}>
+                Where Ideas Take Shape
               </p>
-            </div>
-            <Link to="/products" className="d-flex align-items-center gap-1 fw-semibold" style={{ color: 'var(--pn-primary)', fontSize: '0.9rem' }}>
-              View All <FiChevronRight size={16} />
-            </Link>
-          </div>
 
-          {products.length === 0 ? (
-            <Row className="g-4">
-              {[...Array(6)].map((_, i) => (
-                <Col xs={12} sm={6} lg={4} xl={2} key={i}>
-                  <div className="card-custom h-100" style={{ minHeight: 340 }}>
-                    <div style={{ height: 200, backgroundColor: '#f5f6f8', borderRadius: '12px 12px 0 0' }} />
-                    <div className="p-3">
-                      <div style={{ height: 12, backgroundColor: '#f0f1f5', borderRadius: 4, marginBottom: 8 }} />
-                      <div style={{ height: 10, backgroundColor: '#f0f1f5', borderRadius: 4, width: '70%' }} />
-                    </div>
+              <p className="c3d-animate-up c3d-delay-3" style={{
+                fontSize: '1.1rem', lineHeight: 1.8,
+                color: '#cccccc', marginBottom: 36,
+                maxWidth: 520,
+              }}>
+                From imagination to reality — we turn your ideas into
+                high-quality 3D printed creations. Keychains, miniatures,
+                toys, figurines, custom designs and more.
+              </p>
+
+              <div className="c3d-animate-up c3d-delay-4" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <a
+                  href={waHref} target="_blank" rel="noopener noreferrer"
+                  className="c3d-glow-pulse"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 10,
+                    backgroundColor: '#d4af37', color: '#0a0a0a',
+                    padding: '14px 28px', borderRadius: 10,
+                    fontWeight: 800, fontSize: '1rem', textDecoration: 'none',
+                    boxShadow: '0 8px 24px rgba(212,175,55,0.3)',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#f0d060'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#d4af37'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+                >
+                  <FaWhatsapp size={20} /> START YOUR PROJECT
+                </a>
+                <Link
+                  to="/shop"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    border: '2px solid #d4af37', color: '#d4af37',
+                    padding: '12px 24px', borderRadius: 10,
+                    fontWeight: 700, fontSize: '1rem', textDecoration: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#d4af37'; (e.currentTarget as HTMLElement).style.color = '#0a0a0a'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#d4af37'; }}
+                >
+                  VIEW OUR WORK <FiChevronRight size={18} />
+                </Link>
+              </div>
+
+              {/* Trust badges */}
+              <div className="c3d-animate-up c3d-delay-5" style={{ display: 'flex', gap: 24, marginTop: 32, flexWrap: 'wrap' }}>
+                {[
+                  { num: '100%', label: 'Custom Made' },
+                  { num: 'Fast', label: 'Turnaround' },
+                  { num: '8+', label: 'Print Types' },
+                ].map((b, i) => (
+                  <div key={i} className="c3d-popin" style={{ textAlign: 'center', animationDelay: `${0.7 + i * 0.15}s` }}>
+                    <p style={{ fontSize: '1.4rem', fontWeight: 900, color: '#d4af37', margin: 0, lineHeight: 1 }}>{b.num}</p>
+                    <p style={{ fontSize: '0.75rem', color: '#888', margin: 0, fontWeight: 600 }}>{b.label}</p>
                   </div>
-                </Col>
-              ))}
-            </Row>
-          ) : (
-            <Row className="g-4">
-              {products.map((product) => (
-                <Col xs={12} sm={6} lg={4} xl={2} key={product.id}>
-                  <ProductCard product={product} />
-                </Col>
-              ))}
-            </Row>
-          )}
-        </Container>
-      </section>
-
-      {/* ── 4. Promo Banners ───────────────────────────────── */}
-      <section className="py-5 bg-white" aria-label="Promotional offers">
-        <Container>
-          <Row className="g-4">
-            <Col md={6}>
-              <div className="promo-card" style={{ backgroundColor: p0.bgColor || 'var(--pn-primary-bg)' }}>
-                <div>
-                  <Badge className="mb-2 px-3 py-2" style={{ backgroundColor: '#ffe0e9', color: 'var(--pn-primary)', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-                    {p0.badge}
-                  </Badge>
-                  <h3 className="fw-bold mb-2" style={{ fontSize: '1.4rem' }}>{p0.heading}</h3>
-                  <p className="text-muted mb-4" style={{ maxWidth: 220, fontSize: '0.875rem', lineHeight: 1.6 }}>{p0.subtext}</p>
-                  <Link to={p0.buttonLink || '/products'} className="btn btn-pink">
-                    {p0.buttonText} <FiChevronRight size={15} />
-                  </Link>
-                </div>
-                <img src={p0.image} alt={p0.heading} className="d-none d-sm-block" loading="lazy" />
+                ))}
               </div>
             </Col>
-            <Col md={6}>
-              <div className="promo-card" style={{ backgroundColor: p1.bgColor || '#eef4ff' }}>
-                <div>
-                  <Badge className="mb-2 px-3 py-2" style={{ backgroundColor: '#ddeeff', color: '#0062cc', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-                    {p1.badge}
-                  </Badge>
-                  <h3 className="fw-bold mb-2" style={{ fontSize: '1.4rem' }}>{p1.heading}</h3>
-                  <p className="text-muted mb-4" style={{ maxWidth: 220, fontSize: '0.875rem', lineHeight: 1.6 }}>{p1.subtext}</p>
-                  <Link to={p1.buttonLink || '/products'} className="btn btn-pink">
-                    {p1.buttonText} <FiChevronRight size={15} />
-                  </Link>
-                </div>
-                <img src={p1.image} alt={p1.heading} className="d-none d-sm-block" loading="lazy" />
+
+            {/* Right — 3D Printer Visual */}
+            <Col lg={6} className="text-center">
+              <div className="c3d-float" style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 'min(420px, 100%)', height: 400,
+                borderRadius: 24,
+                background: 'linear-gradient(145deg, #161616, #0d0d0d)',
+                border: '1px solid #2a2a2a',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,175,55,0.1)',
+                position: 'relative', overflow: 'hidden',
+              }}>
+                {/* Rotating conic glow */}
+                <div className="c3d-conic-glow" />
+                {/* Corner accents */}
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 40, height: 40, borderTop: '2px solid #d4af37', borderLeft: '2px solid #d4af37', borderRadius: '24px 0 0 0' }} />
+                <div style={{ position: 'absolute', top: 0, right: 0, width: 40, height: 40, borderTop: '2px solid #d4af37', borderRight: '2px solid #d4af37', borderRadius: '0 24px 0 0' }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, width: 40, height: 40, borderBottom: '2px solid #d4af37', borderLeft: '2px solid #d4af37', borderRadius: '0 0 0 24px' }} />
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 40, height: 40, borderBottom: '2px solid #d4af37', borderRight: '2px solid #d4af37', borderRadius: '0 0 24px 0' }} />
+
+                <svg width="240" height="280" viewBox="0 0 240 280" fill="none">
+                  {/* Frame outer */}
+                  <rect x="20" y="8" width="200" height="220" rx="10" fill="none" stroke="#2a2a2a" strokeWidth="2.5" />
+                  {/* Top rail */}
+                  <rect x="30" y="28" width="180" height="22" rx="5" fill="#1a1a1a" stroke="#d4af37" strokeWidth="2" />
+                  {/* Rail shine */}
+                  <rect x="35" y="31" width="80" height="4" rx="2" fill="rgba(212,175,55,0.3)" />
+                  {/* Print head */}
+                  <rect x="100" y="42" width="40" height="28" rx="5" fill="#d4af37" />
+                  <rect x="108" y="70" width="24" height="8" rx="2" fill="#b8941f" />
+                  {/* Nozzle drip line */}
+                  <line x1="120" y1="78" x2="120" y2="150" stroke="#d4af37" strokeWidth="2" strokeDasharray="4 4" opacity="0.4" />
+                  {/* Print bed */}
+                  <rect x="40" y="172" width="160" height="8" rx="4" fill="#d4af37" opacity="0.7" />
+                  <rect x="45" y="180" width="150" height="44" rx="4" fill="#161616" stroke="#d4af37" strokeWidth="1.5" opacity="0.6" />
+                  {/* Printed object — cube being printed */}
+                  <path d="M120 130 L152 147 L152 173 L120 190 L88 173 L88 147 Z" fill="none" stroke="#d4af37" strokeWidth="2.5" />
+                  <path d="M88 147 L120 130 L152 147 L120 164 Z" fill="#d4af37" opacity="0.25" />
+                  <path d="M120 164 L120 190" stroke="#d4af37" strokeWidth="2" />
+                  <path d="M120 164 L88 147" stroke="#d4af37" strokeWidth="1.5" opacity="0.4" />
+                  <path d="M120 164 L152 147" stroke="#d4af37" strokeWidth="1.5" opacity="0.4" />
+                  {/* Base plate */}
+                  <rect x="10" y="228" width="220" height="34" rx="8" fill="#161616" stroke="#2a2a2a" strokeWidth="2" />
+                  {/* Base details */}
+                  <rect x="30" y="236" width="60" height="10" rx="3" fill="#222" />
+                  <rect x="100" y="236" width="40" height="10" rx="3" fill="#d4af37" opacity="0.4" />
+                  <rect x="150" y="236" width="60" height="10" rx="3" fill="#222" />
+                  {/* Side pillars */}
+                  <rect x="20" y="8" width="12" height="220" rx="4" fill="#1a1a1a" stroke="#2a2a2a" strokeWidth="1.5" />
+                  <rect x="208" y="8" width="12" height="220" rx="4" fill="#1a1a1a" stroke="#2a2a2a" strokeWidth="1.5" />
+                </svg>
+
+                {/* Gold glow */}
+                <div style={{
+                  position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)',
+                  width: 140, height: 12, borderRadius: '50%',
+                  background: 'rgba(212,175,55,0.25)', filter: 'blur(24px)',
+                }} />
               </div>
             </Col>
           </Row>
         </Container>
       </section>
 
-      {/* ── 5. Why Choose Us ───────────────────────────────── */}
-      <section className="py-5" style={{ backgroundColor: 'var(--pn-bg-section)' }} aria-label="Why choose PaperNest">
+      {/* ══════════════════════════════════════
+          2. OUR SERVICES
+      ══════════════════════════════════════ */}
+      <section id="services" style={{ padding: '5rem 0', backgroundColor: '#111111' }}>
         <Container>
-          <div className="text-center mb-5">
-            <h2 className="section-title">{settings.whyTitle}</h2>
-            <p className="section-subtitle mt-2">{settings.whySubtext}</p>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <p style={{ color: '#d4af37', fontWeight: 700, letterSpacing: '2px', fontSize: '0.8rem', marginBottom: 8 }}>WHAT WE DO</p>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 900, color: '#ffffff', marginBottom: 12 }}>
+              Our Services
+            </h2>
+            <p style={{ color: '#b0b0b0', fontSize: '1rem', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
+              From custom prints to personalized products — here is what we create.
+            </p>
           </div>
-          <div className="why-choose-container">
-            <Row className="g-3">
-              {USPS.map((item, i) => (
-                <Col xs={12} sm={6} md={4} lg={2} key={i}>
-                  <div className="why-card">
-                    <div className="why-icon-wrap">{item.icon}</div>
-                    <div>
-                      <p className="fw-bold mb-1" style={{ fontSize: '0.875rem' }}>{item.title}</p>
-                      <p className="text-muted mb-0" style={{ fontSize: '0.78rem', lineHeight: 1.5 }}>{item.desc}</p>
-                    </div>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          </div>
-        </Container>
-      </section>
 
-      {/* ── 6. Testimonials ────────────────────────────────── */}
-      <section className="py-5 bg-white" aria-label="Customer reviews">
-        <Container>
-          <div className="text-center mb-5">
-            <h2 className="section-title">What Our Customers Say</h2>
-            <p className="section-subtitle mt-2">Real reviews from real customers who love PaperNest.</p>
-          </div>
           <Row className="g-4">
-            {TESTIMONIALS.map((t, i) => (
+            {SERVICES.map((svc, i) => (
               <Col xs={12} sm={6} lg={3} key={i}>
-                <div className="testimonial-card">
-                  <div className="d-flex align-items-center gap-2 mb-3">
-                    <div
-                      className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                      style={{ width: 40, height: 40, backgroundColor: 'var(--pn-primary)', fontSize: '1rem', flexShrink: 0 }}
-                      aria-hidden="true"
-                    >
-                      {t.name[0]}
-                    </div>
-                    <div>
-                      <p className="fw-bold mb-0" style={{ fontSize: '0.875rem' }}>{t.name}</p>
-                      <p className="text-muted mb-0" style={{ fontSize: '0.75rem' }}>{t.city}</p>
-                    </div>
+                <div style={{
+                  backgroundColor: '#1a1a1a',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: 16, padding: '2rem 1.5rem',
+                  textAlign: 'center', height: '100%',
+                  transition: 'all 0.3s ease',
+                  cursor: 'default',
+                }}
+                  onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#d4af37'; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = '0 12px 30px rgba(212,175,55,0.1)'; }}
+                  onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#2a2a2a'; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none'; }}
+                >
+                  <div style={{
+                    width: 68, height: 68, borderRadius: '50%',
+                    backgroundColor: 'rgba(212,175,55,0.1)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 1rem', color: '#d4af37',
+                  }}>
+                    {svc.icon}
                   </div>
-                  <StarRating rating={t.stars} size={14} />
-                  <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.85rem', lineHeight: 1.6 }}>
-                    "{t.text}"
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>
+                    {svc.title}
+                  </h3>
+                  <p style={{ fontSize: '0.875rem', color: '#b0b0b0', lineHeight: 1.6, margin: 0 }}>
+                    {svc.desc}
                   </p>
                 </div>
               </Col>
@@ -402,57 +352,239 @@ export const Home: React.FC = () => {
         </Container>
       </section>
 
-      {/* ── 7. Newsletter ──────────────────────────────────── */}
-      <section className="newsletter-section py-5" aria-label="Newsletter signup">
+      {/* ══════════════════════════════════════
+          3. RECENT WORKS
+      ══════════════════════════════════════ */}
+      <section style={{ padding: '5rem 0', backgroundColor: '#0d0d0d' }}>
         <Container>
-          <Row className="justify-content-center">
-            <Col lg={7} className="text-center text-white">
-              <FiMail size={36} className="mb-3 opacity-75" />
-              <h2 className="fw-bold mb-2" style={{ fontSize: '1.75rem' }}>
-                {settings.newsletterTitle}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <p style={{ color: '#d4af37', fontWeight: 700, letterSpacing: '2px', fontSize: '0.8rem', marginBottom: 4 }}>PORTFOLIO</p>
+              <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 900, color: '#ffffff', margin: 0 }}>
+                Recent Works
               </h2>
-              <p className="mb-4 opacity-75" style={{ fontSize: '0.95rem', lineHeight: 1.7 }}>
-                {settings.newsletterSubtext}
+            </div>
+            <Link to="/shop" style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              color: '#d4af37', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none',
+              border: '1px solid rgba(212,175,55,0.3)', padding: '8px 16px', borderRadius: 8,
+              transition: 'all 0.2s',
+            }}
+              onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'rgba(212,175,55,0.1)'; }}
+              onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'transparent'; }}
+            >
+              View All <FiChevronRight size={16} />
+            </Link>
+          </div>
+
+          {products.length === 0 ? (
+            <Row className="g-4">
+              {[...Array(4)].map((_, i) => (
+                <Col xs={12} sm={6} lg={3} key={i}>
+                  <div style={{ backgroundColor: '#1a1a1a', borderRadius: 16, overflow: 'hidden', border: '1px solid #2a2a2a' }}>
+                    <div style={{ height: 200, backgroundColor: '#222' }} />
+                    <div style={{ padding: '1rem' }}>
+                      <div style={{ height: 12, backgroundColor: '#2a2a2a', borderRadius: 4, marginBottom: 8 }} />
+                      <div style={{ height: 10, backgroundColor: '#222', borderRadius: 4, width: '70%' }} />
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <Row className="g-4">
+              {products.slice(0, 8).map((product) => (
+                <Col xs={12} sm={6} lg={3} key={product.id}>
+                  <WorkCard product={product} waNumber={WA} />
+                </Col>
+              ))}
+            </Row>
+          )}
+        </Container>
+      </section>
+
+      {/* ══════════════════════════════════════
+          4. ABOUT
+      ══════════════════════════════════════ */}
+      <section style={{ padding: '5rem 0', backgroundColor: '#111111' }}>
+        <Container>
+          <Row className="align-items-center gy-5">
+            <Col lg={6}>
+              <p style={{ color: '#d4af37', fontWeight: 700, letterSpacing: '2px', fontSize: '0.8rem', marginBottom: 12 }}>ABOUT US</p>
+              <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 900, color: '#ffffff', marginBottom: 20, lineHeight: 1.2 }}>
+                We Turn Your Ideas Into <span style={{ color: '#d4af37' }}>Real Objects</span>
+              </h2>
+              <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#cccccc', marginBottom: 16 }}>
+                CRAFTONEST3D is a custom 3D-printing studio focused on turning ideas,
+                designs and concepts into physical objects. We specialize in custom 3D printing,
+                personalized name products, keychains, miniatures, toys, figurines, decorative
+                models, functional parts and custom designs.
               </p>
-              {subscribed ? (
-                <div
-                  className="d-inline-flex align-items-center gap-2 px-4 py-3 rounded-3"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600 }}
+              <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#b0b0b0', marginBottom: 32 }}>
+                Every print is carefully prepared and crafted with attention to detail so your
+                idea becomes a tangible, high-quality object.
+              </p>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <Link to="/about" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  border: '2px solid #d4af37', color: '#d4af37',
+                  padding: '12px 24px', borderRadius: 10,
+                  fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none',
+                  transition: 'all 0.2s',
+                }}
+                  onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = '#d4af37'; el.style.color = '#0a0a0a'; }}
+                  onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = 'transparent'; el.style.color = '#d4af37'; }}
                 >
-                  <FiSend size={18} /> Thank you for subscribing! 🎉
-                </div>
-              ) : (
-                <form onSubmit={handleSubscribe} className="d-flex gap-0 mx-auto" style={{ maxWidth: 460 }}>
-                  <input
-                    type="email"
-                    className="newsletter-input form-control"
-                    placeholder="Enter your email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    aria-label="Newsletter email"
-                  />
-                  <button type="submit" className="newsletter-btn">
-                    Subscribe
-                  </button>
-                </form>
-              )}
-              <p className="mt-3 mb-0 opacity-60" style={{ fontSize: '0.78rem' }}>
-                No spam ever. Unsubscribe at any time.
-              </p>
+                  Learn More
+                </Link>
+                <a href={waHref} target="_blank" rel="noopener noreferrer" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  backgroundColor: '#d4af37', color: '#0a0a0a',
+                  padding: '12px 24px', borderRadius: 10,
+                  fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none',
+                  transition: 'all 0.2s',
+                }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#f0d060'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#d4af37'; }}
+                >
+                  <FaWhatsapp size={18} /> Get a Quote
+                </a>
+              </div>
+            </Col>
+            <Col lg={6}>
+              <Row className="g-3">
+                {[
+                  { icon: <FiPrinter size={22} />, label: 'Custom 3D Printing' },
+                  { icon: <FiTag size={22} />,     label: 'Personalized Products' },
+                  { icon: <FiLayers size={22} />,  label: 'Miniatures & Figurines' },
+                  { icon: <FiBox size={22} />,     label: 'Keychains' },
+                  { icon: <FiZap size={22} />,     label: 'Toys & Models' },
+                  { icon: <FiTool size={22} />,    label: 'Functional Parts' },
+                ].map((item, i) => (
+                  <Col xs={6} key={i}>
+                    <div style={{
+                      backgroundColor: '#1a1a1a',
+                      border: '1px solid #2a2a2a',
+                      borderRadius: 12, padding: '1.25rem',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      transition: 'border-color 0.2s',
+                    }}
+                      onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.borderColor = '#d4af37'}
+                      onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.borderColor = '#2a2a2a'}
+                    >
+                      <div style={{ color: '#d4af37', flexShrink: 0 }}>{item.icon}</div>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#ffffff' }}>{item.label}</span>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
             </Col>
           </Row>
         </Container>
       </section>
 
-      {/* ── Floating WhatsApp ──────────────────────────────── */}
+      {/* ══════════════════════════════════════
+          5. HOW IT WORKS
+      ══════════════════════════════════════ */}
+      <section id="how-it-works" style={{ padding: '5rem 0', backgroundColor: '#0d0d0d' }}>
+        <Container>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <p style={{ color: '#d4af37', fontWeight: 700, letterSpacing: '2px', fontSize: '0.8rem', marginBottom: 8 }}>PROCESS</p>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 900, color: '#ffffff', marginBottom: 12 }}>
+              How It Works
+            </h2>
+            <p style={{ color: '#b0b0b0', fontSize: '1rem', maxWidth: 500, margin: '0 auto' }}>
+              From idea to finished print in four simple steps.
+            </p>
+          </div>
+          <Row className="g-4">
+            {STEPS.map((step, i) => (
+              <Col xs={12} sm={6} lg={3} key={i}>
+                <div style={{
+                  backgroundColor: '#1a1a1a',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: 16, padding: '2rem 1.5rem',
+                  textAlign: 'center', height: '100%',
+                  transition: 'all 0.3s',
+                  position: 'relative',
+                }}
+                  onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#d4af37'; el.style.transform = 'translateY(-4px)'; }}
+                  onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#2a2a2a'; el.style.transform = 'translateY(0)'; }}
+                >
+                  {/* Step number */}
+                  <div style={{
+                    width: 56, height: 56, borderRadius: '50%',
+                    backgroundColor: '#d4af37', color: '#0a0a0a',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 1rem',
+                    fontSize: '1.1rem', fontWeight: 900,
+                  }}>
+                    {step.num}
+                  </div>
+                  <div style={{ color: '#d4af37', marginBottom: 12 }}>{step.icon}</div>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>
+                    {step.title}
+                  </h3>
+                  <p style={{ fontSize: '0.875rem', color: '#b0b0b0', lineHeight: 1.6, margin: 0 }}>
+                    {step.desc}
+                  </p>
+                </div>
+              </Col>
+            ))}
+          </Row>
+        </Container>
+      </section>
+
+      {/* ══════════════════════════════════════
+          6. CTA
+      ══════════════════════════════════════ */}
+      <section id="cta" style={{
+        padding: '6rem 0',
+        background: 'linear-gradient(135deg, #111 0%, #1a1a0a 50%, #111 100%)',
+        borderTop: '1px solid #2a2a2a',
+        borderBottom: '1px solid #2a2a2a',
+      }}>
+        <Container>
+          <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
+            <h2 style={{
+              fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
+              fontWeight: 900, color: '#ffffff',
+              lineHeight: 1.1, marginBottom: 16,
+            }}>
+              YOUR IDEA.<br />
+              <span style={{ color: '#d4af37' }}>OUR PRINT.</span>
+            </h2>
+            <p style={{ fontSize: '1.15rem', color: '#cccccc', lineHeight: 1.7, marginBottom: 36 }}>
+              Have an idea you'd like to turn into a real object?<br />
+              Chat with us on WhatsApp — we'll bring it to life.
+            </p>
+            <a
+              href={waHref} target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 12,
+                backgroundColor: '#d4af37', color: '#0a0a0a',
+                padding: '16px 40px', borderRadius: 12,
+                fontWeight: 900, fontSize: '1.1rem', textDecoration: 'none',
+                boxShadow: '0 12px 36px rgba(212,175,55,0.35)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = '#f0d060'; el.style.transform = 'translateY(-3px)'; el.style.boxShadow = '0 16px 40px rgba(212,175,55,0.45)'; }}
+              onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.backgroundColor = '#d4af37'; el.style.transform = 'translateY(0)'; el.style.boxShadow = '0 12px 36px rgba(212,175,55,0.35)'; }}
+            >
+              <FaWhatsapp size={24} /> GET A QUOTE
+            </a>
+            <p style={{ marginTop: 16, fontSize: '0.85rem', color: '#888' }}>
+              Fast response · No commitment · 100% custom
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* Floating WhatsApp */}
       <a
-        href={`https://wa.me/${WA}?text=${encodeURIComponent('Hi! I want to know more about your products.')}`}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={waHref} target="_blank" rel="noopener noreferrer"
         className="floating-whatsapp"
         aria-label="Chat on WhatsApp"
-        title="Order on WhatsApp"
       >
         <FaWhatsapp size={26} />
       </a>

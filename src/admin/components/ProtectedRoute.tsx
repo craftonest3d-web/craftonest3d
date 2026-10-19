@@ -1,5 +1,5 @@
 /**
- * PaperNest – Protected Route
+ * CRAFTONEST3D – Protected Route
  * Redirects unauthenticated users to /admin/login.
  */
 import React from 'react';
