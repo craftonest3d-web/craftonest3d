@@ -243,6 +243,20 @@ const AdminContent: React.FC = () => {
           </p>
         </Section>
 
+        {/* ── EMPTY CATEGORY MESSAGE ───────────────────── */}
+        <Section title="Empty Category Message" icon="🚀">
+          <TextField
+            label="Shown when a category has no products yet"
+            value={settings.emptyCategoryText ?? ''}
+            onChange={(v) => set('emptyCategoryText', v)}
+            rows={3}
+            placeholder="✨ New designs are on the way! Check back soon or message us for custom requests."
+          />
+          <p className="text-muted mb-0" style={{ fontSize: '0.75rem' }}>
+            Customers see this catchy “Coming Soon” message (with a WhatsApp request button) when you add a new category but haven’t added items to it yet.
+          </p>
+        </Section>
+
         {/* ── HERO SLIDE 1 ─────────────────────────────── */}
         <Section title="Hero Banner – Slide 1" icon="🖼️" defaultOpen>
           <Row className="g-3">

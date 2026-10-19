@@ -37,6 +37,8 @@ function toProduct(id: string, data: Record<string, unknown>): Product {
     inStock:         (data.inStock        as boolean) ?? true,
     isFeatured:      (data.isFeatured     as boolean) ?? false,
     isBulk:          (data.isBulk         as boolean) ?? false,
+    videoUrl:        (data.videoUrl       as string | undefined),
+    videoEnabled:    (data.videoEnabled   as boolean) ?? false,
     material:        (data.material       as string)  ?? undefined,
     size:            (data.size           as string)  ?? undefined,
     customOptions:   (data.customOptions  as import('../types').ProductCustomOption[] | undefined) ?? undefined,

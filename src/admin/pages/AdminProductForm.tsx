@@ -65,7 +65,7 @@ const EMPTY: ProductForm = {
   title: '', description: '', category: '', categoryLabel: '',
   price: 0, originalPrice: 0, rating: 5, reviews: 0,
   badge: '', badgeType: '', image: '', inStock: true,
-  isFeatured: false, isBulk: false, material: '', size: '', sizePrices: {}, sizeOriginalPrices: {}, whatsappMessage: '',
+  isFeatured: false, isBulk: false, videoUrl: '', videoEnabled: false, material: '', size: '', sizePrices: {}, sizeOriginalPrices: {}, whatsappMessage: '',
 };
 
 const BADGE_OPTIONS: { label: string; value: Product['badge']; type: Product['badgeType'] }[] = [
@@ -573,6 +573,39 @@ const AdminProductForm: React.FC = () => {
               >
                 <FiPlus size={14} /> Add Size & Price
               </button>
+            </div>
+
+            {/* ── Sample Video ─────────────────────── */}
+            <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #e8eaed' }}>
+              <h6 className="fw-bold mb-1" style={{ color: '#0a1128', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                🎬 Sample Video <span style={{ fontSize: '0.68rem', color: '#8a8f99', fontWeight: 600 }}>(optional)</span>
+              </h6>
+              <p className="text-muted mb-3" style={{ fontSize: '0.8rem' }}>
+                Paste a <strong>YouTube link</strong> (upload your sample to YouTube — free) or a direct <strong>.mp4</strong> URL. When enabled, a “Watch Sample” video shows in the product popup.
+              </p>
+
+              {/* On/off toggle */}
+              <div
+                className="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3"
+                style={{ backgroundColor: form.videoEnabled ? '#e8f5e9' : '#f8f9fc', cursor: 'pointer', userSelect: 'none' }}
+                onClick={() => set('videoEnabled', !form.videoEnabled)}
+                role="checkbox" aria-checked={!!form.videoEnabled} tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && set('videoEnabled', !form.videoEnabled)}
+              >
+                <span className="fw-semibold" style={{ fontSize: '0.875rem', color: form.videoEnabled ? '#2e7d32' : '#5c677d' }}>
+                  {form.videoEnabled ? '✓ Sample video shown on shop' : 'Sample video hidden'}
+                </span>
+                <div className="rounded-pill" style={{ width: 40, height: 22, backgroundColor: form.videoEnabled ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: 2, left: form.videoEnabled ? 20 : 2, transition: 'left 0.2s' }} />
+                </div>
+              </div>
+
+              <Form.Control
+                value={form.videoUrl ?? ''}
+                onChange={(e) => set('videoUrl', e.target.value)}
+                placeholder="https://youtu.be/XXXX  or  https://…/sample.mp4"
+                style={{ ...inputStyle, height: 42 }}
+              />
             </div>
 
             {/* ── Custom WhatsApp Message ──────────── */}

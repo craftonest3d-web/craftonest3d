@@ -45,6 +45,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 
   siteLogo:     '',
   showLogoText: true,
+  emptyCategoryText: '✨ New designs are on the way! We are busy crafting fresh items for this category. Check back soon or message us on WhatsApp for custom requests.',
 
   festival: {
     enabled:    false,

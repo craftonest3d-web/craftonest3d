@@ -50,6 +50,20 @@ const DEFAULT_COLOURS = [
 
 // ── Sizes ──────────────────────────────────────────────────────────────────
 const PENCIL_SIZES  = ['3cm', '4cm', '5cm', '6cm'];
+
+// Convert a YouTube watch/share URL to an embeddable URL; returns '' if not YouTube.
+function toYouTubeEmbed(url: string): string {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
+  return m ? `https://www.youtube.com/embed/${m[1]}` : '';
+}
+function isDirectVideo(url: string): boolean {
+  return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+}
+// Get a YouTube video id (for thumbnail), '' if not YouTube.
+function youTubeId(url: string): string {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
+  return m ? m[1] : '';
+}
 const KEYCHAIN_SIZES = ['4cm', '5cm', '6cm', '7cm', '8cm'];
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -78,6 +92,7 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
     : /bulk|pack|set of|batch|\d+\s*pcs|\d+\s*pieces|wholesale/.test(t);
 
   const [name,     setName]     = useState('');
+  const [showVideo, setShowVideo] = useState(false);
   const [font,     setFont]     = useState(FONTS[0]);
   const [colour,   setColour]   = useState(COLOURS[0]);
   const [size,     setSize]     = useState(dynamicSizes[0] ?? sizes[1]);
@@ -244,6 +259,85 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
               <img src={product.image} alt={product.title}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
+
+            {/* Sample video — small thumbnail, expands to full screen on click */}
+            {product.videoEnabled && product.videoUrl?.trim() && (
+              <div
+                onClick={() => setShowVideo(true)}
+                style={{
+                  width: '100%', aspectRatio: '16/9', position: 'relative',
+                  borderRadius: 12, overflow: 'hidden', cursor: 'pointer',
+                  border: '1px solid #2a2a2a', backgroundColor: '#000',
+                }}
+                title="Click to play sample video"
+              >
+                {/* Thumbnail: YouTube poster, else the product image */}
+                <img
+                  src={youTubeId(product.videoUrl) ? `https://img.youtube.com/vi/${youTubeId(product.videoUrl)}/hqdefault.jpg` : product.image}
+                  alt="Sample video"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.75 }}
+                />
+                {/* Play overlay */}
+                <div style={{
+                  position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: '50%',
+                    backgroundColor: 'rgba(212,175,55,0.95)', color: '#000',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.1rem', boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                  }}>▶</div>
+                </div>
+                <span style={{
+                  position: 'absolute', bottom: 6, left: 8,
+                  backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff',
+                  fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 4,
+                }}>🎬 Sample</span>
+              </div>
+            )}
+
+            {/* Full-screen video lightbox */}
+            {showVideo && product.videoUrl?.trim() && (
+              <div
+                onClick={() => setShowVideo(false)}
+                style={{
+                  position: 'fixed', inset: 0, zIndex: 4100,
+                  backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(4px)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+                }}
+              >
+                <button
+                  onClick={() => setShowVideo(false)}
+                  aria-label="Close video"
+                  style={{
+                    position: 'absolute', top: 18, right: 18, width: 42, height: 42, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)',
+                    color: '#fff', fontSize: '1.3rem', cursor: 'pointer', zIndex: 2,
+                  }}
+                >×</button>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ width: 'min(900px, 94vw)', aspectRatio: '16/9', backgroundColor: '#000', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}
+                >
+                  {toYouTubeEmbed(product.videoUrl) ? (
+                    <iframe
+                      src={toYouTubeEmbed(product.videoUrl) + '?autoplay=1'}
+                      title="Sample video"
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                      allowFullScreen
+                    />
+                  ) : isDirectVideo(product.videoUrl) ? (
+                    <video src={product.videoUrl} controls autoPlay style={{ width: '100%', height: '100%' }} />
+                  ) : (
+                    <a href={product.videoUrl} target="_blank" rel="noopener noreferrer"
+                      style={{ color: '#d4af37', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', textDecoration: 'none', fontWeight: 700 }}>
+                      ▶ Open video in new tab
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Live name preview */}
             <div style={{
@@ -748,6 +842,8 @@ export const Products: React.FC = () => {
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const settings = useSiteSettings();
   const codAvailable = settings.codAvailable ?? false;
+  const emptyCategoryText = settings.emptyCategoryText
+    || '✨ New designs are on the way! Check back soon or message us for custom requests.';
 
   useEffect(() => {
     Promise.all([getAllProducts(), getAllCategories()]).then(([prods, cats]) => {
@@ -886,14 +982,39 @@ export const Products: React.FC = () => {
             ))}
           </Row>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 12 }}>🔍</div>
-            <h5 style={{ color: '#fff', marginBottom: 8 }}>Nothing found</h5>
-            <p style={{ color: '#666', marginBottom: 20, fontSize: '0.9rem' }}>Try a different search or browse all categories.</p>
-            <button onClick={() => { clearSearch(); setActiveCategory('all'); }} style={{ backgroundColor: '#d4af37', color: '#000', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer' }}>
-              View All
-            </button>
-          </div>
+          (activeCategory !== 'all' && !search.trim()) ? (
+            /* Empty CATEGORY (no products yet) → catchy coming-soon message */
+            <div className="c3d-animate-up" style={{ textAlign: 'center', padding: '4rem 1rem', maxWidth: 540, margin: '0 auto' }}>
+              <div className="c3d-float" style={{ fontSize: '3.4rem', marginBottom: 14 }}>🚀✨</div>
+              <h5 style={{ color: '#d4af37', fontWeight: 900, marginBottom: 12, fontSize: '1.3rem' }}>Coming Soon!</h5>
+              <p style={{ color: '#bbb', marginBottom: 22, fontSize: '0.92rem', lineHeight: 1.6 }}>
+                {emptyCategoryText}
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <a
+                  className="c3d-btn c3d-btn--wa"
+                  href={`https://wa.me/${WA}?text=${encodeURIComponent('Hi CRAFTONEST3D! I would like a custom order / to know when new items arrive.')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#25D366', color: '#fff', borderRadius: 10, padding: '11px 22px', fontWeight: 800, textDecoration: 'none', fontSize: '0.88rem' }}
+                >
+                  <FaWhatsapp size={16} /> Request on WhatsApp
+                </a>
+                <button onClick={() => setActiveCategory('all')} style={{ backgroundColor: '#d4af37', color: '#000', border: 'none', borderRadius: 10, padding: '11px 22px', fontWeight: 800, cursor: 'pointer', fontSize: '0.88rem' }}>
+                  Browse All Items
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* No SEARCH results */
+            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 12 }}>🔍</div>
+              <h5 style={{ color: '#fff', marginBottom: 8 }}>Nothing found</h5>
+              <p style={{ color: '#666', marginBottom: 20, fontSize: '0.9rem' }}>Try a different search or browse all categories.</p>
+              <button onClick={() => { clearSearch(); setActiveCategory('all'); }} style={{ backgroundColor: '#d4af37', color: '#000', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 700, cursor: 'pointer' }}>
+                View All
+              </button>
+            </div>
+          )
         ) : (
           <Row className="g-3">
             {filtered.map(product => (

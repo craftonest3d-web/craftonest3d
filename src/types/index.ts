@@ -32,6 +32,10 @@ export interface Product {
   isFeatured: boolean;
   /** Bulk / wholesale item → shows batch dropdown + "Enquire for Bulk Price" only (no cart) */
   isBulk?: boolean;
+  /** Optional sample video (YouTube link or direct .mp4 URL) */
+  videoUrl?: string;
+  /** Show the sample video on the shop (owner toggle) */
+  videoEnabled?: boolean;
   material?: string;
   size?: string;
   /** Customization options the customer fills before enquiring */
@@ -98,6 +102,8 @@ export interface SiteSettings {
   shopColours?: { label: string; hex: string }[];
   /** Site logo image (header, coming soon). Falls back to the built-in icon if empty. */
   siteLogo?: string;
+  /** Catchy message shown when a category has no products yet */
+  emptyCategoryText?: string;
   /** Show the "CRAFTONEST3D" text beside the logo (default true) */
   showLogoText?: boolean;
   /** Festival / seasonal greeting popup + home banner (owner-controlled) */
