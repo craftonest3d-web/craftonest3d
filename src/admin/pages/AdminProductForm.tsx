@@ -201,7 +201,8 @@ const AdminProductForm: React.FC = () => {
       if (galleryRef.current) galleryRef.current.value = '';
     }
   };
-  const removeGalleryImage = (i: number) => set('images', gallery.filter((_, idx) => idx !== i));
+  const removeGalleryImage = (i: number) =>
+    setForm((prev) => ({ ...prev, images: (prev.images ?? []).filter((_, idx) => idx !== i) }));
 
   const handleBadgeChange = (value: string) => {
     const opt = BADGE_OPTIONS.find((o) => o.value === value);
@@ -638,10 +639,19 @@ const AdminProductForm: React.FC = () => {
               </p>
               <div className="d-flex flex-wrap gap-2 mb-3">
                 {gallery.map((img, i) => (
-                  <div key={i} style={{ position: 'relative', width: 72, height: 72, borderRadius: 8, overflow: 'hidden', border: '1px solid #e3e6ec' }}>
+                  <div key={i} style={{ position: 'relative', width: 84, height: 84, borderRadius: 8, overflow: 'hidden', border: '1px solid #e3e6ec' }}>
                     <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button type="button" onClick={() => removeGalleryImage(i)}
-                      style={{ position: 'absolute', top: 2, right: 2, width: 20, height: 20, borderRadius: '50%', background: 'rgba(198,40,40,0.9)', color: '#fff', border: 'none', fontSize: '0.7rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeGalleryImage(i); }}
+                      title="Remove this photo"
+                      style={{
+                        position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: '50%',
+                        background: '#c62828', color: '#fff', border: '2px solid #fff', fontSize: '1rem',
+                        cursor: 'pointer', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.3)', zIndex: 2, padding: 0,
+                      }}
+                    >×</button>
                   </div>
                 ))}
               </div>
@@ -982,28 +992,31 @@ const AdminProductForm: React.FC = () => {
                 </div>
               </div>
 
-              {/* Colour picker toggle — only meaningful when personalized */}
-              {form.isCustomizable && (
-                <div
-                  className="d-flex align-items-center justify-content-between p-3 rounded-3 mt-2"
-                  style={{ backgroundColor: form.colourEnabled !== false ? '#e8f5e9' : '#f8f9fc', cursor: 'pointer', userSelect: 'none' }}
-                  onClick={() => set('colourEnabled', !(form.colourEnabled !== false))}
-                  role="checkbox" aria-checked={form.colourEnabled !== false} tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && set('colourEnabled', !(form.colourEnabled !== false))}
-                >
-                  <div>
-                    <p className="fw-semibold mb-0" style={{ fontSize: '0.875rem', color: form.colourEnabled !== false ? '#2e7d32' : '#5c677d' }}>
-                      {form.colourEnabled !== false ? '🎨 Colour options ON' : 'Colour options OFF'}
-                    </p>
-                    <p className="mb-0" style={{ fontSize: '0.72rem', color: form.colourEnabled !== false ? '#4caf50' : '#9a9a9a' }}>
-                      {form.colourEnabled !== false ? 'Customer picks a colour' : 'No colour choice shown'}
-                    </p>
+              {/* Colour picker toggle — INDEPENDENT of personalized (works for any product) */}
+              {(() => {
+                const colourOn = form.colourEnabled !== false;
+                return (
+                  <div
+                    className="d-flex align-items-center justify-content-between p-3 rounded-3 mt-2"
+                    style={{ backgroundColor: colourOn ? '#e8f5e9' : '#f8f9fc', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => set('colourEnabled', !colourOn)}
+                    role="checkbox" aria-checked={colourOn} tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter') set('colourEnabled', !colourOn); }}
+                  >
+                    <div>
+                      <p className="fw-semibold mb-0" style={{ fontSize: '0.875rem', color: colourOn ? '#2e7d32' : '#5c677d' }}>
+                        {colourOn ? '🎨 Colour options ON' : 'Colour options OFF'}
+                      </p>
+                      <p className="mb-0" style={{ fontSize: '0.72rem', color: colourOn ? '#4caf50' : '#9a9a9a' }}>
+                        {colourOn ? 'Customer picks a colour (works with or without name)' : 'No colour choice shown'}
+                      </p>
+                    </div>
+                    <div className="rounded-pill" style={{ width: 40, height: 22, backgroundColor: colourOn ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', position: 'absolute', top: 2, left: colourOn ? 20 : 2, transition: 'left 0.2s ease' }} />
+                    </div>
                   </div>
-                  <div className="rounded-pill" style={{ width: 40, height: 22, backgroundColor: form.colourEnabled !== false ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', position: 'absolute', top: 2, left: form.colourEnabled !== false ? 20 : 2, transition: 'left 0.2s ease' }} />
-                  </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
           </Col>

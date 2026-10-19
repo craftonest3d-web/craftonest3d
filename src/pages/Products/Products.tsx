@@ -98,9 +98,11 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
   const isCustom = typeof product.isCustomizable === 'boolean'
     ? product.isCustomizable
     : (product.category === 'pencil-toppers' || product.category === 'keychains');
-  // Colour picker: only for customizable products, and only when colour is enabled
-  // (default ON for custom products unless the owner turned it off).
-  const showColours = isCustom && (product.colourEnabled !== false);
+  // Colour picker: independent of personalization. Shown whenever colour is enabled.
+  // Default: ON for customizable/old products; for non-customizable, only if explicitly enabled.
+  const showColours = typeof product.colourEnabled === 'boolean'
+    ? product.colourEnabled
+    : isCustom;
 
   const gallery = [product.image, ...((product.images ?? []).filter(Boolean))].filter(Boolean);
   const [activeImg, setActiveImg] = useState(product.image);
