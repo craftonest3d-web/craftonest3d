@@ -32,6 +32,12 @@ export interface Product {
   isFeatured: boolean;
   /** Bulk / wholesale item → shows batch dropdown + "Enquire for Bulk Price" only (no cart) */
   isBulk?: boolean;
+  /** Personalized item → customer enters name/text, font, colour. If false, order directly. */
+  isCustomizable?: boolean;
+  /** Show the colour picker (only applies when customizable). Default true. */
+  colourEnabled?: boolean;
+  /** Extra gallery images (3–5 optional). The main `image` is the primary. */
+  images?: string[];
   /** Optional sample video (YouTube link or direct .mp4 URL) */
   videoUrl?: string;
   /** Show the sample video on the shop (owner toggle) */

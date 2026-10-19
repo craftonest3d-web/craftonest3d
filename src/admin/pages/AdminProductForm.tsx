@@ -65,7 +65,7 @@ const EMPTY: ProductForm = {
   title: '', description: '', category: '', categoryLabel: '',
   price: 0, originalPrice: 0, rating: 5, reviews: 0,
   badge: '', badgeType: '', image: '', inStock: true,
-  isFeatured: false, isBulk: false, videoUrl: '', videoEnabled: false, material: '', size: '', sizePrices: {}, sizeOriginalPrices: {}, whatsappMessage: '',
+  isFeatured: false, isBulk: false, isCustomizable: true, colourEnabled: true, images: [], videoUrl: '', videoEnabled: false, material: '', size: '', sizePrices: {}, sizeOriginalPrices: {}, whatsappMessage: '',
 };
 
 const BADGE_OPTIONS: { label: string; value: Product['badge']; type: Product['badgeType'] }[] = [
@@ -182,6 +182,26 @@ const AdminProductForm: React.FC = () => {
     set('category', slug);
     set('categoryLabel', cat?.name ?? slug);
   };
+
+  // ── Gallery images (3–5 optional extra photos) ────────────────────
+  const gallery = form.images ?? [];
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const addGalleryImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (gallery.length >= 5) { setUploadError('Maximum 5 gallery images.'); return; }
+    setGalleryUploading(true);
+    try {
+      const url = await compressImage(file);
+      if (url.length > 1_000_000) { setUploadError('That image is too large even after compression — use a smaller one.'); return; }
+      set('images', [...gallery, url]);
+    } finally {
+      setGalleryUploading(false);
+      if (galleryRef.current) galleryRef.current.value = '';
+    }
+  };
+  const removeGalleryImage = (i: number) => set('images', gallery.filter((_, idx) => idx !== i));
 
   const handleBadgeChange = (value: string) => {
     const opt = BADGE_OPTIONS.find((o) => o.value === value);
@@ -608,6 +628,31 @@ const AdminProductForm: React.FC = () => {
               />
             </div>
 
+            {/* ── Gallery Images (3–5 optional) ────── */}
+            <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #e8eaed' }}>
+              <h6 className="fw-bold mb-1" style={{ color: '#0a1128', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                🖼️ Gallery Images <span style={{ fontSize: '0.68rem', color: '#8a8f99', fontWeight: 600 }}>(optional, up to 5)</span>
+              </h6>
+              <p className="text-muted mb-3" style={{ fontSize: '0.8rem' }}>
+                Add a few more photos (different angles / colours). Customers can swipe through them on the product. The main image above stays the cover.
+              </p>
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {gallery.map((img, i) => (
+                  <div key={i} style={{ position: 'relative', width: 72, height: 72, borderRadius: 8, overflow: 'hidden', border: '1px solid #e3e6ec' }}>
+                    <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button type="button" onClick={() => removeGalleryImage(i)}
+                      style={{ position: 'absolute', top: 2, right: 2, width: 20, height: 20, borderRadius: '50%', background: 'rgba(198,40,40,0.9)', color: '#fff', border: 'none', fontSize: '0.7rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+                  </div>
+                ))}
+              </div>
+              <input ref={galleryRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={addGalleryImage} hidden />
+              <button type="button" onClick={() => galleryRef.current?.click()} disabled={galleryUploading || gallery.length >= 5}
+                className="btn btn-sm d-flex align-items-center gap-2"
+                style={{ backgroundColor: '#0a1128', color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.8rem', padding: '8px 14px', borderRadius: 8, opacity: gallery.length >= 5 ? 0.5 : 1 }}>
+                {galleryUploading ? 'Uploading…' : <><FiUpload size={14} /> Add Photo ({gallery.length}/5)</>}
+              </button>
+            </div>
+
             {/* ── Custom WhatsApp Message ──────────── */}
             <div className="bg-white rounded-4 p-4" style={{ border: '1px solid #e8eaed' }}>
               <div className="d-flex align-items-center gap-2 mb-1">
@@ -915,6 +960,50 @@ const AdminProductForm: React.FC = () => {
                   }} />
                 </div>
               </div>
+
+              {/* Personalized / Customizable toggle */}
+              <div
+                className="d-flex align-items-center justify-content-between p-3 rounded-3 mt-2"
+                style={{ backgroundColor: form.isCustomizable ? '#f3e5f5' : '#f8f9fc', cursor: 'pointer', userSelect: 'none' }}
+                onClick={() => set('isCustomizable', !form.isCustomizable)}
+                role="checkbox" aria-checked={!!form.isCustomizable} tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && set('isCustomizable', !form.isCustomizable)}
+              >
+                <div>
+                  <p className="fw-semibold mb-0" style={{ fontSize: '0.875rem', color: form.isCustomizable ? '#7b1fa2' : '#5c677d' }}>
+                    {form.isCustomizable ? '✏️ Personalized (name/text)' : 'Not Personalized'}
+                  </p>
+                  <p className="mb-0" style={{ fontSize: '0.72rem', color: form.isCustomizable ? '#9c27b0' : '#9a9a9a' }}>
+                    {form.isCustomizable ? 'Customer enters name, font & colour' : 'Ready-made — order directly, no name needed'}
+                  </p>
+                </div>
+                <div className="rounded-pill" style={{ width: 40, height: 22, backgroundColor: form.isCustomizable ? '#9c27b0' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', position: 'absolute', top: 2, left: form.isCustomizable ? 20 : 2, transition: 'left 0.2s ease' }} />
+                </div>
+              </div>
+
+              {/* Colour picker toggle — only meaningful when personalized */}
+              {form.isCustomizable && (
+                <div
+                  className="d-flex align-items-center justify-content-between p-3 rounded-3 mt-2"
+                  style={{ backgroundColor: form.colourEnabled !== false ? '#e8f5e9' : '#f8f9fc', cursor: 'pointer', userSelect: 'none' }}
+                  onClick={() => set('colourEnabled', !(form.colourEnabled !== false))}
+                  role="checkbox" aria-checked={form.colourEnabled !== false} tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && set('colourEnabled', !(form.colourEnabled !== false))}
+                >
+                  <div>
+                    <p className="fw-semibold mb-0" style={{ fontSize: '0.875rem', color: form.colourEnabled !== false ? '#2e7d32' : '#5c677d' }}>
+                      {form.colourEnabled !== false ? '🎨 Colour options ON' : 'Colour options OFF'}
+                    </p>
+                    <p className="mb-0" style={{ fontSize: '0.72rem', color: form.colourEnabled !== false ? '#4caf50' : '#9a9a9a' }}>
+                      {form.colourEnabled !== false ? 'Customer picks a colour' : 'No colour choice shown'}
+                    </p>
+                  </div>
+                  <div className="rounded-pill" style={{ width: 40, height: 22, backgroundColor: form.colourEnabled !== false ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', position: 'absolute', top: 2, left: form.colourEnabled !== false ? 20 : 2, transition: 'left 0.2s ease' }} />
+                  </div>
+                </div>
+              )}
             </div>
 
           </Col>

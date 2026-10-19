@@ -82,7 +82,10 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
   // Available sizes come from sizePrices keys if set, else from category defaults
   const sizePriceMap = product.sizePrices ?? {};
   const sizeOrigMap  = product.sizeOriginalPrices ?? {};
-  const dynamicSizes = Object.keys(sizePriceMap).length > 0 ? Object.keys(sizePriceMap) : sizes;
+  // Show the size selector ONLY when the owner configured size-based pricing.
+  // Otherwise there are no sizes to choose and the selector is hidden.
+  const hasSizes = Object.keys(sizePriceMap).length > 0;
+  const dynamicSizes = hasSizes ? Object.keys(sizePriceMap) : sizes;
 
   // Bulk flag: use the explicit admin toggle when set; otherwise fall back to
   // text detection for older products that predate the flag.
@@ -91,11 +94,21 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
     ? product.isBulk
     : /bulk|pack|set of|batch|\d+\s*pcs|\d+\s*pieces|wholesale/.test(t);
 
+  // Personalized? Explicit toggle wins; else fall back to category (old products).
+  const isCustom = typeof product.isCustomizable === 'boolean'
+    ? product.isCustomizable
+    : (product.category === 'pencil-toppers' || product.category === 'keychains');
+  // Colour picker: only for customizable products, and only when colour is enabled
+  // (default ON for custom products unless the owner turned it off).
+  const showColours = isCustom && (product.colourEnabled !== false);
+
+  const gallery = [product.image, ...((product.images ?? []).filter(Boolean))].filter(Boolean);
+  const [activeImg, setActiveImg] = useState(product.image);
   const [name,     setName]     = useState('');
   const [showVideo, setShowVideo] = useState(false);
   const [font,     setFont]     = useState(FONTS[0]);
   const [colour,   setColour]   = useState(COLOURS[0]);
-  const [size,     setSize]     = useState(dynamicSizes[0] ?? sizes[1]);
+  const [size,     setSize]     = useState(hasSizes ? dynamicSizes[0] : '');
   const [qty,      setQty]      = useState(isBulk ? 25 : 1);
 
   // Price for the currently selected size (falls back to product.price)
@@ -117,12 +130,14 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
       `I'd like to order:`,
       `*${product.title}*`,
       ``,
-      isBulk
-        ? `📝 Names List: ${name.trim() || '(not entered)'}`
-        : `📝 Name/Text: ${name.trim() || '(not entered)'}`,
-      `🔤 Font Style: ${font.label}`,
-      `📏 Size: ${size}`,
-      `🎨 Colour: ${colour.label} (${colour.hex})`,
+      isCustom
+        ? (isBulk
+            ? `📝 Names List: ${name.trim() || '(not entered)'}`
+            : `📝 Name/Text: ${name.trim() || '(not entered)'}`)
+        : '',
+      isCustom ? `🔤 Font Style: ${font.label}` : '',
+      hasSizes ? `📏 Size: ${size}` : '',
+      showColours ? `🎨 Colour: ${colour.label} (${colour.hex})` : '',
       isBulk
         ? `🔢 Quantity needed: (please tell us how many pieces)`
         : `🔢 Quantity: ${qty}`,
@@ -155,7 +170,8 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
     return lines.join('\n');
   };
 
-  const canOrder = name.trim().length > 0;
+  // Non-customizable products can order without entering a name.
+  const canOrder = isCustom ? name.trim().length > 0 : true;
   const { addToCart } = useCart();
 
   // Save a single-item order to admin history (fire-and-forget).
@@ -170,7 +186,11 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
         quantity: qty,
         unitPrice: unitPrice,
         lineTotal: unitPrice * qty,
-        options: { 'Name / Text': name.trim(), Font: font.label, Size: size, Colour: colour.label },
+        options: {
+          ...(isCustom ? { 'Name / Text': name.trim(), Font: font.label } : {}),
+          ...(showColours ? { Colour: colour.label } : {}),
+          ...(hasSizes ? { Size: size } : {}),
+        },
       }],
     });
   };
@@ -178,10 +198,9 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
   const handleAddToCart = () => {
     if (!canOrder) return;
     const customizations: Record<string, string> = {
-      'Name / Text': name,
-      'Font': font.label,
-      'Size': size,
-      'Colour': colour.label,
+      ...(isCustom ? { 'Name / Text': name, 'Font': font.label } : {}),
+      ...(showColours ? { Colour: colour.label } : {}),
+      ...(hasSizes ? { Size: size } : {}),
     };
     // Pass the product with the price matching the selected size
     const productWithPrice = { ...product, price: unitPrice, originalPrice: unitOriginal, size };
@@ -256,9 +275,28 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
               border: '1px solid #2a2a2a',
               backgroundColor: '#1a1a1a',
             }}>
-              <img src={product.image} alt={product.title}
+              <img src={activeImg || product.image} alt={product.title}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
+
+            {/* Gallery thumbnails (if extra images exist) */}
+            {gallery.length > 1 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', width: '100%', justifyContent: 'center' }}>
+                {gallery.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImg(img)}
+                    style={{
+                      width: 48, height: 48, borderRadius: 8, overflow: 'hidden',
+                      border: (activeImg || product.image) === img ? '2px solid #d4af37' : '1px solid #2a2a2a',
+                      padding: 0, cursor: 'pointer', background: '#1a1a1a', flexShrink: 0,
+                    }}
+                  >
+                    <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Sample video — small thumbnail, expands to full screen on click */}
             {product.videoEnabled && product.videoUrl?.trim() && (
@@ -339,7 +377,9 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
               </div>
             )}
 
-            {/* Live name preview */}
+            {/* Live name preview — personalized items only */}
+            {isCustom && (
+            <>
             <div style={{
               width: '100%',
               backgroundColor: colour.hex === '#FFFFFF' ? '#1a1a1a' : '#f5f5f5',
@@ -364,6 +404,8 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
             <p style={{ color: '#555', fontSize: '0.7rem', textAlign: 'center', margin: 0 }}>
               Live preview (approximate)
             </p>
+            </>
+            )}
 
             {/* Price box — single items only. Bulk is enquiry/call, no price shown. */}
             {isBulk ? (
@@ -414,7 +456,8 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
           {/* RIGHT — Customization options */}
           <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-            {/* Name input */}
+            {/* Name input — personalized items only */}
+            {isCustom && (
             <div>
               <label style={{ display: 'block', color: '#fff', fontSize: '0.875rem', fontWeight: 700, marginBottom: 8 }}>
                 {isBulk ? '📝 All Names (one per line or comma separated)' : '📝 Your Name / Text'}
@@ -463,8 +506,10 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
                 {isBulk ? `${qty} pcs — list all names you want printed` : `${name.length}/16 characters`}
               </p>
             </div>
+            )}
 
-            {/* Font style */}
+            {/* Font style — personalized items only */}
+            {isCustom && (
             <div>
               <label style={{ display: 'block', color: '#fff', fontSize: '0.875rem', fontWeight: 700, marginBottom: 8 }}>
                 🔤 Font Style
@@ -499,8 +544,10 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
                 ))}
               </div>
             </div>
+            )}
 
-            {/* Size */}
+            {/* Size — only when the owner configured size-based pricing */}
+            {hasSizes && (
             <div>
               <label style={{ display: 'block', color: '#fff', fontSize: '0.875rem', fontWeight: 700, marginBottom: 8 }}>
                 📏 Size
@@ -531,11 +578,13 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
                 })}
               </div>
               <p style={{ color: '#555', fontSize: '0.72rem', margin: '4px 0 0' }}>
-                {isPencilTopper ? 'Standard pencil hole size' : 'Total length'}{Object.keys(sizePriceMap).length > 0 ? ' · price varies by size' : ''}
+                {isPencilTopper ? 'Standard pencil hole size' : 'Total length'} · price varies by size
               </p>
             </div>
+            )}
 
-            {/* Colour */}
+            {/* Colour — personalized items with colour enabled */}
+            {showColours && (
             <div>
               <label style={{ display: 'block', color: '#fff', fontSize: '0.875rem', fontWeight: 700, marginBottom: 8 }}>
                 🎨 Colour —{' '}
@@ -568,6 +617,7 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
                 ))}
               </div>
             </div>
+            )}
 
             {/* Quantity */}
             {/* Quantity — single items only. Bulk quantity is agreed on the call/chat. */}
