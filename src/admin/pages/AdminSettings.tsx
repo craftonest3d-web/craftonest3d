@@ -49,6 +49,34 @@ const AdminSettings: React.FC = () => {
   const updateColour   = (i: number, field: 'label' | 'hex', value: string) =>
     setColours(colours.map((c, idx) => (idx === i ? { ...c, [field]: value } : c)));
 
+  // Full distinct 28-colour palette
+  const FULL_PALETTE = [
+    { label: 'Black', hex: '#1C1C1C' }, { label: 'White', hex: '#FFFFFF' },
+    { label: 'Grey', hex: '#9E9E9E' }, { label: 'Silver', hex: '#C0C0C0' },
+    { label: 'Red', hex: '#E74C3C' }, { label: 'Dark Red', hex: '#B71C1C' },
+    { label: 'Orange', hex: '#E67E22' }, { label: 'Yellow', hex: '#F1C40F' },
+    { label: 'Gold', hex: '#D4AF37' }, { label: 'Lime', hex: '#CDDC39' },
+    { label: 'Green', hex: '#2ECC71' }, { label: 'Dark Green', hex: '#1B5E20' },
+    { label: 'Teal', hex: '#009688' }, { label: 'Cyan', hex: '#00BCD4' },
+    { label: 'Sky Blue', hex: '#87CEEB' }, { label: 'Blue', hex: '#2196F3' },
+    { label: 'Navy', hex: '#1A237E' }, { label: 'Purple', hex: '#9C27B0' },
+    { label: 'Violet', hex: '#7E57C2' }, { label: 'Lavender', hex: '#C39BD3' },
+    { label: 'Pink', hex: '#FF6B9D' }, { label: 'Magenta', hex: '#E91E63' },
+    { label: 'Brown', hex: '#795548' }, { label: 'Beige', hex: '#D7CCC8' },
+    { label: 'Rose Gold', hex: '#B76E79' }, { label: 'Copper', hex: '#B87333' },
+    { label: 'Glow Green', hex: '#B2FF59' }, { label: 'Transparent', hex: '#E8EAF6' },
+  ];
+  const loadFullPalette = () => setColours(FULL_PALETTE);
+  const dedupeColours = () => {
+    const seen = new Set<string>();
+    const out: { label: string; hex: string }[] = [];
+    colours.forEach((c) => {
+      const key = (c.label.trim().toLowerCase() + '|' + c.hex.trim().toUpperCase());
+      if (!seen.has(key)) { seen.add(key); out.push(c); }
+    });
+    setColours(out);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!settings) return;
@@ -308,19 +336,37 @@ const AdminSettings: React.FC = () => {
 
         {/* ── Available Colours ─────────────────────── */}
         <div className="bg-white rounded-4 p-4 mb-4" style={{ border: '1px solid #f0f1f5' }}>
-          <div className="d-flex align-items-center justify-content-between mb-1">
-            <h6 className="fw-bold mb-0">🎨 Available Colours</h6>
-            <button
-              type="button"
-              onClick={addColour}
-              className="btn btn-sm"
-              style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '5px 12px', borderRadius: 7 }}
-            >
-              + Add Colour
-            </button>
+          <div className="d-flex align-items-center justify-content-between mb-1 flex-wrap gap-2">
+            <h6 className="fw-bold mb-0">🎨 Available Colours ({colours.length})</h6>
+            <div className="d-flex gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={loadFullPalette}
+                className="btn btn-sm"
+                style={{ backgroundColor: '#ede7f6', color: '#5e35b1', border: 'none', fontWeight: 700, fontSize: '0.76rem', padding: '5px 12px', borderRadius: 7 }}
+              >
+                ✨ Load full 28 colours
+              </button>
+              <button
+                type="button"
+                onClick={dedupeColours}
+                className="btn btn-sm"
+                style={{ backgroundColor: '#fff3e0', color: '#e65100', border: 'none', fontWeight: 700, fontSize: '0.76rem', padding: '5px 12px', borderRadius: 7 }}
+              >
+                Remove duplicates
+              </button>
+              <button
+                type="button"
+                onClick={addColour}
+                className="btn btn-sm"
+                style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '5px 12px', borderRadius: 7 }}
+              >
+                + Add Colour
+              </button>
+            </div>
           </div>
           <p className="text-muted mb-3" style={{ fontSize: '0.76rem' }}>
-            These are the colours customers can pick in the shop. Remove one when it is out of stock, add new ones anytime.
+            These are the colours customers can pick in the shop. <strong>“Load full 28 colours”</strong> replaces the list with a clean distinct set. Then <strong>Save Changes</strong> at the bottom.
           </p>
 
           {colours.length === 0 ? (

@@ -4,7 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 // ── MAINTENANCE MODE ───────────────────────────────────────────────────────
 // Set to true  → shows Coming Soon page to all visitors (TESTING)
 // Set to false → shows the full website (LIVE)
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 
 // Secret preview path — admins can always access the full site via this path
 // Visit: craftonest3d.in/preview to see the full site while in maintenance mode
