@@ -771,8 +771,11 @@ const CustomizerModal: React.FC<{ product: Product; onClose: () => void }> = ({ 
 // ══════════════════════════════════════════════════════════════════════════
 const ProductCard: React.FC<{ product: Product; onCustomize: (p: Product) => void }> = ({ product, onCustomize }) => {
   const [hovered, setHovered] = useState(false);
-  const isCustomizable = (product.customOptions?.length ?? 0) > 0 ||
-    product.category === 'pencil-toppers' || product.category === 'keychains';
+  // Respect the explicit admin toggle; fall back to category for older products.
+  const isCustomizable = typeof product.isCustomizable === 'boolean'
+    ? product.isCustomizable
+    : ((product.customOptions?.length ?? 0) > 0 ||
+       product.category === 'pencil-toppers' || product.category === 'keychains');
 
   return (
     <div
