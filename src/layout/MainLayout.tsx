@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
@@ -6,8 +6,10 @@ import CartDrawer from '../components/cart/CartDrawer';
 import ScrollToTop from '../components/common/ScrollToTop';
 import MobileNav from '../components/common/MobileNav';
 import { FestivalPopup } from '../components/common/FestivalGreeting';
+import { recordVisitOncePerSession } from '../services/visitService';
 
 export const MainLayout: React.FC = () => {
+  useEffect(() => { recordVisitOncePerSession(); }, []);
   return (
     <div
       className="d-flex flex-column min-vh-100"

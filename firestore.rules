@@ -37,6 +37,13 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null;
     }
 
+    // ── STATS (visit counter) ────────────────────────────────────────────
+    // Public may read the total and increment it. Keeps it simple & free.
+    match /stats/{docId} {
+      allow read:  if true;
+      allow write: if true;
+    }
+
     // ── DENY EVERYTHING ELSE ─────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;

@@ -10,6 +10,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { getAllProducts } from '../../services/productService';
 import { getAllCategoriesAdmin } from '../../services/categoryService';
 import { getSiteSettings } from '../../services/settingsService';
+import { getVisitTotal } from '../../services/visitService';
 import { seedFirestoreIfEmpty, clearAndReseed, syncNewSeedItems } from '../../firebase/firebaseSeeder';
 import type { Product } from '../../types';
 
@@ -49,6 +50,7 @@ const AdminDashboard: React.FC = () => {
   const [seedError, setSeedError] = useState('');
   const [paymentReply, setPaymentReply] = useState('');
   const [copied,    setCopied]    = useState(false);
+  const [visits,    setVisits]    = useState<number | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -58,6 +60,7 @@ const AdminDashboard: React.FC = () => {
       setLoading(false);
     });
     getSiteSettings().then((s) => setPaymentReply(s.paymentReplyMessage ?? ''));
+    getVisitTotal().then(setVisits);
   };
 
   useEffect(() => { load(); }, []);
@@ -132,7 +135,6 @@ const AdminDashboard: React.FC = () => {
   };
 
   const featured   = products.filter((p) => p.isFeatured).length;
-  const outOfStock = products.filter((p) => !p.inStock).length;
   const recent     = products.slice(0, 5);
 
   const QUICK_ACTIONS = [
@@ -224,6 +226,9 @@ const AdminDashboard: React.FC = () => {
       {/* ── Stats ─────────────────────────────────────────── */}
       <Row className="g-3 mb-4">
         <Col xs={12} sm={6} xl={3}>
+          <StatCard icon={<FiEye size={22} />} label="Site Visits" value={visits === null ? '–' : visits.toLocaleString('en-IN')} color="#2e7d32" />
+        </Col>
+        <Col xs={12} sm={6} xl={3}>
           <StatCard icon={<FiPackage size={22} />} label="Total Works" value={loading ? '–' : products.length} color="var(--pn-primary)" />
         </Col>
         <Col xs={12} sm={6} xl={3}>
@@ -231,9 +236,6 @@ const AdminDashboard: React.FC = () => {
         </Col>
         <Col xs={12} sm={6} xl={3}>
           <StatCard icon={<FiStar size={22} />} label="Featured" value={loading ? '–' : featured} color="#ff9f43" />
-        </Col>
-        <Col xs={12} sm={6} xl={3}>
-          <StatCard icon={<FaWhatsapp size={22} />} label="Out of Stock" value={loading ? '–' : outOfStock} color="#ee5253" />
         </Col>
       </Row>
 
