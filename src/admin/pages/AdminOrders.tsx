@@ -5,9 +5,10 @@
  * firestore.rules for non-admins).
  */
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiDownload, FiTrash2, FiRefreshCw, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiDownload, FiTrash2, FiRefreshCw, FiChevronDown, FiChevronUp, FiPlus } from 'react-icons/fi';
 import {
   subscribeToOrders, updateOrderStatus, updateOrderPayment, deleteOrder, downloadOrdersCsv,
+  createOfflineOrder,
 } from '../../services/orderService';
 import type { Order, OrderStatus } from '../../types';
 
@@ -27,6 +28,32 @@ const AdminOrders: React.FC = () => {
   const [error,    setError]    = useState('');
   const [filter,   setFilter]   = useState<OrderStatus | 'all'>('all');
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [showOffline, setShowOffline] = useState(false);
+  const [off, setOff] = useState({ customerName: '', itemText: '', quantity: '1', amount: '', courier: '', paymentNote: '', status: 'completed' as OrderStatus });
+  const [savingOff, setSavingOff] = useState(false);
+
+  const lbl: React.CSSProperties = { fontSize: '0.74rem', color: '#5c677d', fontWeight: 600, display: 'block', marginBottom: 4 };
+  const inp: React.CSSProperties = { width: '100%', height: 40, border: '1px solid #e3e6ec', borderRadius: 8, padding: '0 10px', fontSize: '0.85rem' };
+
+  const submitOffline = async () => {
+    if (!off.itemText.trim()) return;
+    setSavingOff(true);
+    try {
+      await createOfflineOrder({
+        customerName: off.customerName.trim(),
+        itemText: off.itemText.trim(),
+        quantity: Number(off.quantity) || 1,
+        amount: Number(off.amount) || 0,
+        courier: off.courier.trim(),
+        paymentNote: off.paymentNote.trim(),
+        status: off.status,
+      });
+      setOff({ customerName: '', itemText: '', quantity: '1', amount: '', courier: '', paymentNote: '', status: 'completed' });
+      setShowOffline(false);
+    } finally {
+      setSavingOff(false);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -43,10 +70,17 @@ const AdminOrders: React.FC = () => {
     [orders, filter],
   );
 
-  const revenue = useMemo(
-    () => orders.reduce((s, o) => s + (o.paymentAmount ?? 0), 0),
-    [orders],
-  );
+  // Accounts tally — online vs offline vs total (counts payment received where logged, else order total)
+  const tally = useMemo(() => {
+    const amt = (o: Order) => (o.paymentAmount ?? o.total ?? 0);
+    let onlineAmt = 0, offlineAmt = 0, onlineCount = 0, offlineCount = 0;
+    orders.forEach((o) => {
+      if (o.status === 'cancelled') return; // don't count cancelled in revenue
+      if (o.source === 'offline') { offlineAmt += amt(o); offlineCount++; }
+      else { onlineAmt += amt(o); onlineCount++; }
+    });
+    return { onlineAmt, offlineAmt, totalAmt: onlineAmt + offlineAmt, onlineCount, offlineCount };
+  }, [orders]);
 
   const changeStatus = async (id: string, status: OrderStatus) => {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
@@ -80,10 +114,17 @@ const AdminOrders: React.FC = () => {
             Order history &amp; payments — only you can see this.
           </p>
         </div>
-        <div className="d-flex align-items-center gap-2">
+        <div className="d-flex align-items-center gap-2 flex-wrap">
           <span className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '0.74rem', fontWeight: 600 }}>
             <FiRefreshCw size={12} /> Live
           </span>
+          <button
+            onClick={() => setShowOffline((v) => !v)}
+            className="btn btn-sm d-flex align-items-center gap-2"
+            style={{ backgroundColor: '#ede7f6', color: '#5e35b1', border: 'none', fontWeight: 700, fontSize: '0.82rem', padding: '8px 14px', borderRadius: 8 }}
+          >
+            <FiPlus size={14} /> Add Offline Order
+          </button>
           <button
             onClick={() => downloadOrdersCsv(filter === 'all' ? orders : visible)}
             disabled={visible.length === 0}
@@ -95,15 +136,84 @@ const AdminOrders: React.FC = () => {
         </div>
       </div>
 
-      {/* Stat chips */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        <div className="px-3 py-2 rounded-3" style={{ backgroundColor: '#fff', border: '1px solid #f0f1f5' }}>
-          <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>TOTAL ORDERS</span>
-          <p className="mb-0 fw-bold" style={{ fontSize: '1.1rem' }}>{orders.length}</p>
+      {/* Add Offline Order form */}
+      {showOffline && (
+        <div className="rounded-4 p-4 mb-4" style={{ backgroundColor: '#fff', border: '1px solid #ece3f5' }}>
+          <h6 className="fw-bold mb-3" style={{ color: '#5e35b1' }}>➕ Add Offline / In-Person Order</h6>
+          <div className="row g-3">
+            <div className="col-sm-6">
+              <label style={lbl}>Customer Name</label>
+              <input value={off.customerName} onChange={(e) => setOff({ ...off, customerName: e.target.value })} placeholder="e.g. Priya (walk-in)" style={inp} />
+            </div>
+            <div className="col-sm-6">
+              <label style={lbl}>Item / Description *</label>
+              <input value={off.itemText} onChange={(e) => setOff({ ...off, itemText: e.target.value })} placeholder="e.g. 2x Name Keychain - Aarav, Priya" style={inp} />
+            </div>
+            <div className="col-sm-3">
+              <label style={lbl}>Quantity</label>
+              <input type="number" min={1} value={off.quantity} onChange={(e) => setOff({ ...off, quantity: e.target.value })} style={inp} />
+            </div>
+            <div className="col-sm-3">
+              <label style={lbl}>Amount (₹)</label>
+              <input type="number" min={0} value={off.amount} onChange={(e) => setOff({ ...off, amount: e.target.value })} placeholder="0" style={inp} />
+            </div>
+            <div className="col-sm-6">
+              <label style={lbl}>Status</label>
+              <select value={off.status} onChange={(e) => setOff({ ...off, status: e.target.value as OrderStatus })} style={inp}>
+                {STATUS_ORDER.map((s) => <option key={s} value={s}>{STATUS_META[s].label}</option>)}
+              </select>
+            </div>
+            <div className="col-sm-6">
+              <label style={lbl}>Courier / Delivery Details</label>
+              <input value={off.courier} onChange={(e) => setOff({ ...off, courier: e.target.value })} placeholder="e.g. DTDC AWB 12345, or Hand delivered" style={inp} />
+            </div>
+            <div className="col-sm-6">
+              <label style={lbl}>Payment Note</label>
+              <input value={off.paymentNote} onChange={(e) => setOff({ ...off, paymentNote: e.target.value })} placeholder="e.g. Cash / GPay, 22 Oct" style={inp} />
+            </div>
+          </div>
+          <div className="d-flex gap-2 mt-3">
+            <button onClick={submitOffline} disabled={savingOff || !off.itemText.trim()}
+              className="btn btn-sm" style={{ backgroundColor: '#5e35b1', color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.82rem', padding: '9px 18px', borderRadius: 8, opacity: (savingOff || !off.itemText.trim()) ? 0.6 : 1 }}>
+              {savingOff ? 'Saving…' : 'Save Offline Order'}
+            </button>
+            <button onClick={() => setShowOffline(false)}
+              className="btn btn-sm" style={{ backgroundColor: '#f0f1f5', color: '#333', border: 'none', fontWeight: 600, fontSize: '0.82rem', padding: '9px 18px', borderRadius: 8 }}>
+              Cancel
+            </button>
+          </div>
         </div>
-        <div className="px-3 py-2 rounded-3" style={{ backgroundColor: '#fff', border: '1px solid #f0f1f5' }}>
-          <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>PAYMENTS RECEIVED</span>
-          <p className="mb-0 fw-bold" style={{ fontSize: '1.1rem', color: '#2e7d32' }}>{inr(revenue)}</p>
+      )}
+
+      {/* Accounts summary — online + offline tally in one shot */}
+      <div className="row g-2 mb-3">
+        <div className="col-6 col-lg-3">
+          <div className="px-3 py-2 rounded-3 h-100" style={{ backgroundColor: '#fff', border: '1px solid #f0f1f5' }}>
+            <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 600 }}>🌐 ONLINE</span>
+            <p className="mb-0 fw-bold" style={{ fontSize: '1.05rem', color: '#1565c0' }}>{inr(tally.onlineAmt)}</p>
+            <span style={{ fontSize: '0.68rem', color: '#9aa0a8' }}>{tally.onlineCount} orders</span>
+          </div>
+        </div>
+        <div className="col-6 col-lg-3">
+          <div className="px-3 py-2 rounded-3 h-100" style={{ backgroundColor: '#fff', border: '1px solid #f0f1f5' }}>
+            <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 600 }}>🏪 OFFLINE</span>
+            <p className="mb-0 fw-bold" style={{ fontSize: '1.05rem', color: '#5e35b1' }}>{inr(tally.offlineAmt)}</p>
+            <span style={{ fontSize: '0.68rem', color: '#9aa0a8' }}>{tally.offlineCount} orders</span>
+          </div>
+        </div>
+        <div className="col-6 col-lg-3">
+          <div className="px-3 py-2 rounded-3 h-100" style={{ backgroundColor: '#e8f5e9', border: '1px solid #c8e6c9' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2e7d32' }}>💰 TOTAL REVENUE</span>
+            <p className="mb-0 fw-bold" style={{ fontSize: '1.15rem', color: '#2e7d32' }}>{inr(tally.totalAmt)}</p>
+            <span style={{ fontSize: '0.68rem', color: '#66996a' }}>online + offline</span>
+          </div>
+        </div>
+        <div className="col-6 col-lg-3">
+          <div className="px-3 py-2 rounded-3 h-100" style={{ backgroundColor: '#fff', border: '1px solid #f0f1f5' }}>
+            <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 600 }}>📦 TOTAL ORDERS</span>
+            <p className="mb-0 fw-bold" style={{ fontSize: '1.15rem' }}>{orders.length}</p>
+            <span style={{ fontSize: '0.68rem', color: '#9aa0a8' }}>excl. cancelled in revenue</span>
+          </div>
         </div>
       </div>
 
@@ -164,6 +274,11 @@ const AdminOrders: React.FC = () => {
                   <span className="badge" style={{ backgroundColor: meta.bg, color: meta.fg, fontWeight: 700, fontSize: '0.7rem', padding: '5px 10px' }}>
                     {meta.label}
                   </span>
+                  {o.source === 'offline' && (
+                    <span className="badge" style={{ backgroundColor: '#ede7f6', color: '#5e35b1', fontWeight: 700, fontSize: '0.64rem', padding: '4px 8px' }}>
+                      🏪 Offline
+                    </span>
+                  )}
                   <span style={{ fontSize: '0.82rem', color: '#333', flex: 1, minWidth: 120 }}>
                     {o.customerName}
                   </span>
@@ -199,6 +314,14 @@ const AdminOrders: React.FC = () => {
                         </div>
                       ))}
                     </div>
+
+                    {/* Courier details */}
+                    {o.courier && (
+                      <div className="pt-2">
+                        <p className="fw-semibold mb-1" style={{ fontSize: '0.78rem', color: '#5c677d', textTransform: 'uppercase', letterSpacing: '0.4px' }}>🚚 Courier</p>
+                        <p className="mb-0" style={{ fontSize: '0.82rem', color: '#333' }}>{o.courier}</p>
+                      </div>
+                    )}
 
                     {/* Status buttons */}
                     <div className="pt-2">

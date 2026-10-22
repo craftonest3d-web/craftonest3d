@@ -408,4 +408,11 @@
 @media (max-width: 991.98px) {
   body { padding-bottom: 64px; }
   .floating-whatsapp { bottom: 80px !important; }
+  /* Scroll-top sits above the WhatsApp button + bottom nav on mobile */
+  .c3d-scrolltop { bottom: 140px; }
+}
+
+/* Desktop: scroll-top above the WhatsApp button */
+@media (min-width: 992px) {
+  .c3d-scrolltop { bottom: 92px; }
 }

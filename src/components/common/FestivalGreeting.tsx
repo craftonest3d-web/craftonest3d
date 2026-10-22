@@ -139,7 +139,10 @@ export const FestivalBanner: React.FC = () => {
         <img
           src={festival.image}
           alt={festival.title || 'Festival offer'}
-          style={{ width: '100%', height: 'auto', display: 'block' }}
+          style={{
+            width: '100%', height: 'auto', display: 'block',
+            maxHeight: 320, objectFit: 'contain',   // show WHOLE image, never crop or stretch
+          }}
         />
         {/* subtle shine sweep + optional button overlay */}
         {festival.buttonText && festival.buttonLink && (

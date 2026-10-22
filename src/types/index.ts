@@ -198,8 +198,10 @@ export interface Order {
   items: OrderItem[];
   total: number;                // sum of lineTotals (0 if all quote-only)
   itemCount: number;            // total pieces across items
-  source: 'single' | 'cart';    // which flow created it
+  source: 'single' | 'cart' | 'offline';  // online flows or a manually-added offline order
   status: OrderStatus;
+  /** Courier / delivery details (tracking no, partner, etc.) */
+  courier?: string;
 
   /* Payment info the owner logs manually after receiving money */
   paymentAmount?: number;       // amount actually received

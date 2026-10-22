@@ -29,6 +29,7 @@ function toOrder(id: string, data: Record<string, unknown>): Order {
     itemCount:     (data.itemCount     as number) ?? 0,
     source:        (data.source        as Order['source']) ?? 'single',
     status:        (data.status        as OrderStatus) ?? 'pending',
+    courier:       (data.courier       as string | undefined),
     paymentAmount: (data.paymentAmount as number | undefined),
     paymentRef:    (data.paymentRef    as string | undefined),
     paymentNote:   (data.paymentNote   as string | undefined),
@@ -60,6 +61,40 @@ export async function createOrder(input: {
     // Never block the customer's WhatsApp flow if saving fails.
     return null;
   }
+}
+
+/** Admin-added offline / in-person order. Admin-authenticated. */
+export async function createOfflineOrder(input: {
+  customerName: string;
+  itemText: string;
+  quantity: number;
+  amount: number;
+  courier?: string;
+  paymentNote?: string;
+  status?: OrderStatus;
+}): Promise<string> {
+  const items: OrderItem[] = [{
+    title: input.itemText || 'Offline order',
+    quantity: input.quantity || 1,
+    unitPrice: input.quantity > 0 ? Math.round((input.amount || 0) / input.quantity) : (input.amount || 0),
+    lineTotal: input.amount || 0,
+    options: {},
+  }];
+  const clean: Record<string, unknown> = {
+    ref: makeRef(),
+    customerName: input.customerName || '(walk-in)',
+    items,
+    total: input.amount || 0,
+    itemCount: input.quantity || 1,
+    source: 'offline' as const,
+    status: input.status ?? 'completed',
+    createdAt: serverTimestamp(),
+  };
+  if (input.courier)     clean.courier = input.courier;
+  if (input.paymentNote) clean.paymentNote = input.paymentNote;
+  if (input.amount)      clean.paymentAmount = input.amount;
+  const ref = await addDoc(collection(db, COL), clean);
+  return ref.id;
 }
 
 export async function getAllOrders(): Promise<Order[]> {
@@ -123,8 +158,8 @@ function csvCell(v: unknown): string {
 
 export function ordersToCsv(orders: Order[]): string {
   const headers = [
-    'Ref', 'Date', 'Customer', 'Status', 'Items', 'Pieces',
-    'Order Total (Rs)', 'Payment Received (Rs)', 'Payment Ref', 'Payment Note',
+    'Ref', 'Date', 'Source', 'Customer', 'Status', 'Items', 'Pieces',
+    'Order Total (Rs)', 'Payment Received (Rs)', 'Payment Ref', 'Payment Note', 'Courier',
   ];
   const rows = orders.map((o) => {
     const itemsText = o.items
@@ -139,6 +174,7 @@ export function ordersToCsv(orders: Order[]): string {
     return [
       o.ref,
       o.createdAt ? o.createdAt.toLocaleString('en-IN') : '',
+      o.source,
       o.customerName,
       o.status,
       itemsText,
@@ -147,6 +183,7 @@ export function ordersToCsv(orders: Order[]): string {
       o.paymentAmount ?? '',
       o.paymentRef ?? '',
       o.paymentNote ?? '',
+      o.courier ?? '',
     ].map(csvCell).join(',');
   });
   return [headers.map(csvCell).join(','), ...rows].join('\r\n');
