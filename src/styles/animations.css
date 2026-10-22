@@ -298,8 +298,48 @@
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 .c3d-festival-banner { animation: c3dFadeIn 0.6s ease both; }
+
+/* Pulsing festive glow around the popup */
+.c3d-fest-glow { animation: c3dFestPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both, c3dFestGlow 2.4s ease-in-out 0.5s infinite; }
+@keyframes c3dFestGlow {
+  0%, 100% { box-shadow: 0 0 50px var(--c3d-accent, #d4af37)44, 0 24px 60px rgba(0,0,0,0.7); }
+  50%      { box-shadow: 0 0 90px var(--c3d-accent, #d4af37)88, 0 24px 60px rgba(0,0,0,0.7); }
+}
+
+/* Shine sweep across the festival image */
+.c3d-fest-imgwrap::after {
+  content: '';
+  position: absolute; top: 0; left: -150%;
+  width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  animation: c3dFestShine 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes c3dFestShine {
+  0%   { left: -150%; }
+  55%  { left: 160%; }
+  100% { left: 160%; }
+}
+
+/* Twinkling sparkles over the image */
+.c3d-fest-spark {
+  position: absolute;
+  color: #fff6c9;
+  font-size: 1.1rem;
+  text-shadow: 0 0 8px #ffe488, 0 0 14px var(--c3d-accent, #d4af37);
+  opacity: 0;
+  pointer-events: none;
+  animation: c3dFestSpark 2.4s ease-in-out infinite;
+}
+@keyframes c3dFestSpark {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  45%, 60% { opacity: 1; transform: scale(1.1) rotate(25deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .c3d-festival-card, .c3d-festival-banner { animation: none !important; }
+  .c3d-festival-card, .c3d-festival-banner, .c3d-fest-glow { animation: none !important; }
+  .c3d-fest-imgwrap::after, .c3d-fest-spark { animation: none !important; opacity: 0; }
 }
 
 /* =====================================================
