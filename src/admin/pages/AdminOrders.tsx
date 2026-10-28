@@ -8,8 +8,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FiDownload, FiTrash2, FiRefreshCw, FiChevronDown, FiChevronUp, FiPlus } from 'react-icons/fi';
 import {
   subscribeToOrders, updateOrderStatus, updateOrderPayment, deleteOrder, downloadOrdersCsv,
-  createOfflineOrder,
+  createOfflineOrder, updateOrderDates, updateOrderShipping,
 } from '../../services/orderService';
+import { normalizeIndianPhone, isValidTrackingUrl, buildWhatsAppUrl, buildShippingMessage } from '../../utils/whatsapp';
 import type { Order, OrderStatus } from '../../types';
 
 const STATUS_META: Record<OrderStatus, { label: string; bg: string; fg: string }> = {
@@ -29,7 +30,7 @@ const AdminOrders: React.FC = () => {
   const [filter,   setFilter]   = useState<OrderStatus | 'all'>('all');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showOffline, setShowOffline] = useState(false);
-  const [off, setOff] = useState({ customerName: '', itemText: '', quantity: '1', amount: '', courier: '', paymentNote: '', status: 'completed' as OrderStatus });
+  const [off, setOff] = useState({ customerName: '', itemText: '', quantity: '1', amount: '', courier: '', paymentNote: '', status: 'completed' as OrderStatus, orderDate: new Date().toISOString().slice(0, 10), deliveryDate: '' });
   const [savingOff, setSavingOff] = useState(false);
 
   const lbl: React.CSSProperties = { fontSize: '0.74rem', color: '#5c677d', fontWeight: 600, display: 'block', marginBottom: 4 };
@@ -47,8 +48,10 @@ const AdminOrders: React.FC = () => {
         courier: off.courier.trim(),
         paymentNote: off.paymentNote.trim(),
         status: off.status,
+        orderDate: off.orderDate,
+        deliveryDate: off.deliveryDate,
       });
-      setOff({ customerName: '', itemText: '', quantity: '1', amount: '', courier: '', paymentNote: '', status: 'completed' });
+      setOff({ customerName: '', itemText: '', quantity: '1', amount: '', courier: '', paymentNote: '', status: 'completed', orderDate: new Date().toISOString().slice(0, 10), deliveryDate: '' });
       setShowOffline(false);
     } finally {
       setSavingOff(false);
@@ -171,6 +174,14 @@ const AdminOrders: React.FC = () => {
               <label style={lbl}>Payment Note</label>
               <input value={off.paymentNote} onChange={(e) => setOff({ ...off, paymentNote: e.target.value })} placeholder="e.g. Cash / GPay, 22 Oct" style={inp} />
             </div>
+            <div className="col-sm-6">
+              <label style={lbl}>Order Date</label>
+              <input type="date" value={off.orderDate} onChange={(e) => setOff({ ...off, orderDate: e.target.value })} style={inp} />
+            </div>
+            <div className="col-sm-6">
+              <label style={lbl}>Delivery Date</label>
+              <input type="date" value={off.deliveryDate} onChange={(e) => setOff({ ...off, deliveryDate: e.target.value })} style={inp} />
+            </div>
           </div>
           <div className="d-flex gap-2 mt-3">
             <button onClick={submitOffline} disabled={savingOff || !off.itemText.trim()}
@@ -211,7 +222,7 @@ const AdminOrders: React.FC = () => {
         <div className="col-6 col-lg-3">
           <div className="px-3 py-2 rounded-3 h-100" style={{ backgroundColor: '#fff', border: '1px solid #f0f1f5' }}>
             <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 600 }}>📦 TOTAL ORDERS</span>
-            <p className="mb-0 fw-bold" style={{ fontSize: '1.15rem' }}>{orders.length}</p>
+            <p className="mb-0 fw-bold" style={{ fontSize: '1.15rem', color: '#0a1128' }}>{orders.length}</p>
             <span style={{ fontSize: '0.68rem', color: '#9aa0a8' }}>excl. cancelled in revenue</span>
           </div>
         </div>
@@ -271,9 +282,15 @@ const AdminOrders: React.FC = () => {
                   onClick={() => setExpanded(isOpen ? null : o.id)}
                 >
                   <span className="fw-bold" style={{ fontSize: '0.85rem', color: '#0a1128', minWidth: 72 }}>{o.ref}</span>
-                  <span className="badge" style={{ backgroundColor: meta.bg, color: meta.fg, fontWeight: 700, fontSize: '0.7rem', padding: '5px 10px' }}>
-                    {meta.label}
-                  </span>
+                  {o.status === 'shipped' ? (
+                    <span className="c3d-transit">
+                      <span className="c3d-transit__move">🚚</span> In Transit
+                    </span>
+                  ) : (
+                    <span className="badge" style={{ backgroundColor: meta.bg, color: meta.fg, fontWeight: 700, fontSize: '0.7rem', padding: '5px 10px' }}>
+                      {meta.label}
+                    </span>
+                  )}
                   {o.source === 'offline' && (
                     <span className="badge" style={{ backgroundColor: '#ede7f6', color: '#5e35b1', fontWeight: 700, fontSize: '0.64rem', padding: '4px 8px' }}>
                       🏪 Offline
@@ -315,13 +332,12 @@ const AdminOrders: React.FC = () => {
                       ))}
                     </div>
 
-                    {/* Courier details */}
-                    {o.courier && (
-                      <div className="pt-2">
-                        <p className="fw-semibold mb-1" style={{ fontSize: '0.78rem', color: '#5c677d', textTransform: 'uppercase', letterSpacing: '0.4px' }}>🚚 Courier</p>
-                        <p className="mb-0" style={{ fontSize: '0.82rem', color: '#333' }}>{o.courier}</p>
-                      </div>
-                    )}
+                    {/* Dates + Courier — editable */}
+                    <DeliveryEditor order={o} />
+
+                    {/* Shipping details + WhatsApp Click-to-Chat */}
+                    <ShippingEditor order={o} />
+
 
                     {/* Status buttons */}
                     <div className="pt-2">
@@ -420,6 +436,190 @@ const PaymentEditor: React.FC<{
           {saved ? '✓ Saved' : 'Save Payment'}
         </button>
       </div>
+    </div>
+  );
+};
+
+// ── Delivery / dates sub-editor (editable after order exists) ────────────────
+const DeliveryEditor: React.FC<{ order: Order }> = ({ order }) => {
+  const [orderDate, setOrderDate]       = useState(order.orderDate ?? '');
+  const [deliveryDate, setDeliveryDate] = useState(order.deliveryDate ?? '');
+  const [courier, setCourier]           = useState(order.courier ?? '');
+  const [saved, setSaved] = useState(false);
+
+  const save = async () => {
+    try {
+      await updateOrderDates(order.id, { orderDate, deliveryDate, courier });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } catch { /* snapshot re-syncs */ }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', height: 38, border: '1px solid #e3e6ec', borderRadius: 8,
+    padding: '0 10px', fontSize: '0.82rem',
+  };
+
+  return (
+    <div className="pt-3">
+      <p className="fw-semibold mb-2" style={{ fontSize: '0.78rem', color: '#5c677d', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+        🚚 Delivery &amp; Dates
+      </p>
+      <div className="d-flex flex-wrap gap-2 align-items-end">
+        <div style={{ flex: '1 1 130px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Order date</label>
+          <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ flex: '1 1 130px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Delivery date</label>
+          <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ flex: '2 1 200px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Courier / tracking</label>
+          <input value={courier} onChange={(e) => setCourier(e.target.value)} placeholder="e.g. DTDC AWB 12345" style={inputStyle} />
+        </div>
+        <button
+          onClick={save}
+          className="btn btn-sm"
+          style={{ backgroundColor: saved ? '#2e7d32' : '#0a1128', color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '8px 16px', borderRadius: 8, height: 38 }}
+        >
+          {saved ? '✓ Saved' : 'Save Dates'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── Shipping sub-editor + WhatsApp Click-to-Chat (FREE, manual send) ─────────
+const ShippingEditor: React.FC<{ order: Order }> = ({ order }) => {
+  const [phone, setPhone]                   = useState(order.phone ?? '');
+  const [courier, setCourier]               = useState(order.courier ?? '');
+  const [trackingNumber, setTrackingNumber] = useState(order.trackingNumber ?? '');
+  const [trackingUrl, setTrackingUrl]       = useState(order.trackingUrl ?? '');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved]   = useState(false);
+  const [opened, setOpened] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', height: 38, border: '1px solid #e3e6ec', borderRadius: 8,
+    padding: '0 10px', fontSize: '0.82rem',
+  };
+
+  // Validity drives the WhatsApp button's disabled state.
+  const phoneOk    = normalizeIndianPhone(phone) !== null;
+  const urlOk      = trackingUrl.trim() !== '' && isValidTrackingUrl(trackingUrl);
+  const trackingOk = trackingNumber.trim() !== '';
+  const canNotify  = phoneOk && urlOk && trackingOk;
+
+  const save = async () => {
+    if (saving) return; // guard against double-submit
+    setSaving(true);
+    try {
+      await updateOrderShipping(order.id, {
+        phone: phone.trim(),
+        courier: courier.trim(),
+        trackingNumber: trackingNumber.trim(),
+        trackingUrl: trackingUrl.trim(),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } catch { /* snapshot re-syncs */ } finally {
+      setSaving(false);
+    }
+  };
+
+  const notifyOnWhatsApp = () => {
+    const digits = normalizeIndianPhone(phone);
+    if (!digits || !canNotify) return;
+    const message = buildShippingMessage({
+      customerName: order.customerName,
+      orderRef: order.ref,
+      courier: courier.trim(),
+      trackingNumber: trackingNumber.trim(),
+      trackingUrl: trackingUrl.trim(),
+    });
+    const url = buildWhatsAppUrl(digits, message);
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setOpened(true);
+  };
+
+  const copyLink = async () => {
+    if (!urlOk) return;
+    try {
+      await navigator.clipboard.writeText(trackingUrl.trim());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch { /* clipboard unavailable — silently ignore */ }
+  };
+
+  return (
+    <div className="pt-3">
+      <p className="fw-semibold mb-2" style={{ fontSize: '0.78rem', color: '#5c677d', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+        🚢 Shipping Details
+      </p>
+      <div className="d-flex flex-wrap gap-2 align-items-end">
+        <div style={{ flex: '1 1 150px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Phone (customer)</label>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. 98765 43210" style={inputStyle} />
+        </div>
+        <div style={{ flex: '1 1 150px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Courier</label>
+          <input value={courier} onChange={(e) => setCourier(e.target.value)} placeholder="e.g. DTDC" style={inputStyle} />
+        </div>
+        <div style={{ flex: '1 1 150px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Tracking number</label>
+          <input value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} placeholder="e.g. AWB 12345" style={inputStyle} />
+        </div>
+        <div style={{ flex: '2 1 220px' }}>
+          <label style={{ fontSize: '0.72rem', color: '#888' }}>Tracking URL</label>
+          <input value={trackingUrl} onChange={(e) => setTrackingUrl(e.target.value)} placeholder="https://…" style={inputStyle} />
+        </div>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="btn btn-sm"
+          style={{ backgroundColor: saved ? '#2e7d32' : '#0a1128', color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '8px 16px', borderRadius: 8, height: 38, opacity: saving ? 0.6 : 1 }}
+        >
+          {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Shipping Details'}
+        </button>
+      </div>
+
+      {/* WhatsApp Click-to-Chat (manual send) */}
+      <div className="d-flex flex-wrap gap-2 align-items-center mt-3">
+        <button
+          onClick={notifyOnWhatsApp}
+          disabled={!canNotify}
+          className="btn btn-sm"
+          style={{ backgroundColor: '#25d366', color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '8px 16px', borderRadius: 8, height: 38, opacity: canNotify ? 1 : 0.5, cursor: canNotify ? 'pointer' : 'not-allowed' }}
+        >
+          💬 Send WhatsApp Tracking Details
+        </button>
+        <button
+          onClick={copyLink}
+          disabled={!urlOk}
+          className="btn btn-sm"
+          style={{ backgroundColor: copied ? '#2e7d32' : '#f0f1f5', color: copied ? '#fff' : '#333', border: 'none', fontWeight: 600, fontSize: '0.78rem', padding: '8px 16px', borderRadius: 8, height: 38, opacity: urlOk ? 1 : 0.5, cursor: urlOk ? 'pointer' : 'not-allowed' }}
+        >
+          {copied ? '✓ Copied' : '🔗 Copy Tracking Link'}
+        </button>
+      </div>
+
+      {!canNotify && (
+        <p className="mb-0 mt-2" style={{ fontSize: '0.72rem', color: '#c62828' }}>
+          Enter a valid phone, tracking number, and http/https tracking URL to notify the customer.
+        </p>
+      )}
+
+      <p className="mb-0 mt-2" style={{ fontSize: '0.72rem', color: '#5c677d' }}>
+        Your shipping message will open in WhatsApp. Please review it and press Send to notify your customer.
+      </p>
+
+      {opened && (
+        <p className="mb-0 mt-1" style={{ fontSize: '0.72rem', color: '#2e7d32' }}>
+          WhatsApp opened — review and press Send.
+        </p>
+      )}
     </div>
   );
 };

@@ -177,6 +177,14 @@ const AdminContent: React.FC = () => {
   const setFest = (field: keyof typeof DEFAULT_FEST, value: string | boolean) =>
     setSettings((prev) => prev ? { ...prev, festival: { ...DEFAULT_FEST, ...(prev.festival ?? {}), [field]: value } } : prev);
 
+  // ── Happy-customer reviews ──────────────────────────────────────────────
+  const reviews = settings?.reviews ?? [];
+  const setReviews = (next: { name: string; text: string; rating: number }[]) => set('reviews', next);
+  const addReview = () => setReviews([...reviews, { name: '', text: '', rating: 5 }]);
+  const updateReview = (i: number, field: 'name' | 'text' | 'rating', value: string | number) =>
+    setReviews(reviews.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  const removeReview = (i: number) => setReviews(reviews.filter((_, idx) => idx !== i));
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!settings) return;
@@ -254,6 +262,65 @@ const AdminContent: React.FC = () => {
           />
           <p className="text-muted mb-0" style={{ fontSize: '0.75rem' }}>
             Customers see this catchy “Coming Soon” message (with a WhatsApp request button) when you add a new category but haven’t added items to it yet.
+          </p>
+        </Section>
+
+        {/* ── HAPPY CUSTOMERS / REVIEWS ────────────────── */}
+        <Section title="Happy Customers (Reviews)" icon="😊">
+          {/* On/off */}
+          <div
+            className="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3"
+            style={{ backgroundColor: settings.reviewsEnabled ? '#e8f5e9' : '#f5f6f8', cursor: 'pointer' }}
+            onClick={() => set('reviewsEnabled', !settings.reviewsEnabled)}
+            role="checkbox" aria-checked={!!settings.reviewsEnabled} tabIndex={0}
+          >
+            <div>
+              <span className="fw-semibold" style={{ fontSize: '0.9rem', color: settings.reviewsEnabled ? '#2e7d32' : '#5c677d' }}>
+                {settings.reviewsEnabled ? '✓ Reviews shown on Home' : 'Reviews hidden'}
+              </span>
+              <p className="mb-0" style={{ fontSize: '0.75rem', color: '#777' }}>
+                When ON, customer reviews scroll right→left on the home page.
+              </p>
+            </div>
+            <div className="rounded-pill" style={{ width: 44, height: 24, backgroundColor: settings.reviewsEnabled ? '#4caf50' : '#e0e0e0', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: 2, left: settings.reviewsEnabled ? 22 : 2, transition: 'left 0.2s' }} />
+            </div>
+          </div>
+
+          {reviews.map((r, i) => (
+            <div key={i} className="p-3 rounded-3 mb-2" style={{ backgroundColor: '#f8f9fc', border: '1px solid #eef0f4' }}>
+              <div className="d-flex gap-2 mb-2">
+                <input
+                  value={r.name}
+                  onChange={(e) => updateReview(i, 'name', e.target.value)}
+                  placeholder="Customer name (e.g. Priya S.)"
+                  style={{ flex: 1, height: 38, border: '1px solid #e3e6ec', borderRadius: 8, padding: '0 10px', fontSize: '0.85rem' }}
+                />
+                <select
+                  value={r.rating}
+                  onChange={(e) => updateReview(i, 'rating', Number(e.target.value))}
+                  style={{ width: 90, height: 38, border: '1px solid #e3e6ec', borderRadius: 8, padding: '0 8px', fontSize: '0.85rem' }}
+                >
+                  {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
+                </select>
+                <button type="button" onClick={() => removeReview(i)}
+                  className="btn btn-sm" style={{ backgroundColor: '#fdecea', color: '#c62828', border: 'none', fontWeight: 700, width: 38, borderRadius: 8 }}>×</button>
+              </div>
+              <textarea
+                value={r.text}
+                onChange={(e) => updateReview(i, 'text', e.target.value)}
+                placeholder="Review text…"
+                rows={2}
+                style={{ width: '100%', border: '1px solid #e3e6ec', borderRadius: 8, padding: '8px 10px', fontSize: '0.85rem', resize: 'vertical' }}
+              />
+            </div>
+          ))}
+          <button type="button" onClick={addReview}
+            className="btn btn-sm" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: 'none', fontWeight: 700, fontSize: '0.78rem', padding: '6px 14px', borderRadius: 7 }}>
+            + Add Review
+          </button>
+          <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.75rem' }}>
+            Add real customer feedback here. Turn the toggle ON to show them scrolling on the home page. Then <strong>Save All Content</strong>.
           </p>
         </Section>
 

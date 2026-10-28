@@ -62,6 +62,12 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   siteLogo:     '',
   showLogoText: true,
   emptyCategoryText: '✨ New designs are on the way! We are busy crafting fresh items for this category. Check back soon or message us on WhatsApp for custom requests.',
+  reviewsEnabled: false,
+  reviews: [
+    { name: 'Priya S.', text: 'Loved the custom name pencil toppers! My daughter was so happy. 😍', rating: 5 },
+    { name: 'Arun K.', text: 'Great quality keychains and fast delivery. Highly recommend!', rating: 5 },
+    { name: 'Meena R.', text: 'Ordered bulk for a school event — perfect finish and best price.', rating: 5 },
+  ],
 
   festival: {
     enabled:    false,

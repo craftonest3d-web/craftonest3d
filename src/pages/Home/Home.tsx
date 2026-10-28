@@ -13,6 +13,7 @@ import type { Product, SiteSettings } from '../../types';
 import { getFeaturedProducts, buildWhatsAppOrderUrl } from '../../services/productService';
 import { DEFAULT_SETTINGS, getSiteSettings } from '../../services/settingsService';
 import { FestivalBanner } from '../../components/common/FestivalGreeting';
+import HappyCustomers from '../../components/common/HappyCustomers';
 
 // ── Services ────────────────────────────────────────────────────────────────
 const SERVICES = [
@@ -534,6 +535,9 @@ export const Home: React.FC = () => {
           </Row>
         </Container>
       </section>
+
+      {/* Happy Customers — scrolling reviews (admin-controlled) */}
+      <HappyCustomers />
 
       {/* ══════════════════════════════════════
           6. CTA

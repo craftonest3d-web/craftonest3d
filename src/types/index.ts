@@ -112,6 +112,9 @@ export interface SiteSettings {
   siteLogo?: string;
   /** Catchy message shown when a category has no products yet */
   emptyCategoryText?: string;
+  /** Happy customer reviews (scrolling testimonials) */
+  reviewsEnabled?: boolean;
+  reviews?: { name: string; text: string; rating: number }[];
   /** Show the "CRAFTONEST3D" text beside the logo (default true) */
   showLogoText?: boolean;
   /** Festival / seasonal greeting popup + home banner (owner-controlled) */
@@ -202,6 +205,16 @@ export interface Order {
   status: OrderStatus;
   /** Courier / delivery details (tracking no, partner, etc.) */
   courier?: string;
+  /** Customer phone (for shipping WhatsApp) */
+  phone?: string;
+  /** Courier AWB / tracking number */
+  trackingNumber?: string;
+  /** http/https tracking link */
+  trackingUrl?: string;
+  /** Order date (offline orders; free date string yyyy-mm-dd) */
+  orderDate?: string;
+  /** Expected / actual delivery date (yyyy-mm-dd) */
+  deliveryDate?: string;
 
   /* Payment info the owner logs manually after receiving money */
   paymentAmount?: number;       // amount actually received

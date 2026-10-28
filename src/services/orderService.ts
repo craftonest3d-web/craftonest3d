@@ -30,6 +30,11 @@ function toOrder(id: string, data: Record<string, unknown>): Order {
     source:        (data.source        as Order['source']) ?? 'single',
     status:        (data.status        as OrderStatus) ?? 'pending',
     courier:       (data.courier       as string | undefined),
+    orderDate:     (data.orderDate     as string | undefined),
+    deliveryDate:  (data.deliveryDate  as string | undefined),
+    phone:          (data.phone          as string | undefined),
+    trackingNumber: (data.trackingNumber as string | undefined),
+    trackingUrl:    (data.trackingUrl    as string | undefined),
     paymentAmount: (data.paymentAmount as number | undefined),
     paymentRef:    (data.paymentRef    as string | undefined),
     paymentNote:   (data.paymentNote   as string | undefined),
@@ -72,6 +77,8 @@ export async function createOfflineOrder(input: {
   courier?: string;
   paymentNote?: string;
   status?: OrderStatus;
+  orderDate?: string;
+  deliveryDate?: string;
 }): Promise<string> {
   const items: OrderItem[] = [{
     title: input.itemText || 'Offline order',
@@ -90,9 +97,11 @@ export async function createOfflineOrder(input: {
     status: input.status ?? 'completed',
     createdAt: serverTimestamp(),
   };
-  if (input.courier)     clean.courier = input.courier;
-  if (input.paymentNote) clean.paymentNote = input.paymentNote;
-  if (input.amount)      clean.paymentAmount = input.amount;
+  if (input.courier)      clean.courier = input.courier;
+  if (input.paymentNote)  clean.paymentNote = input.paymentNote;
+  if (input.amount)       clean.paymentAmount = input.amount;
+  if (input.orderDate)    clean.orderDate = input.orderDate;
+  if (input.deliveryDate) clean.deliveryDate = input.deliveryDate;
   const ref = await addDoc(collection(db, COL), clean);
   return ref.id;
 }
@@ -143,6 +152,29 @@ export async function updateOrderPayment(
   await updateDoc(doc(db, COL, id), clean);
 }
 
+export async function updateOrderDates(
+  id: string,
+  dates: { orderDate?: string; deliveryDate?: string; courier?: string },
+): Promise<void> {
+  const clean: Record<string, unknown> = {};
+  if (dates.orderDate    !== undefined) clean.orderDate = dates.orderDate;
+  if (dates.deliveryDate !== undefined) clean.deliveryDate = dates.deliveryDate;
+  if (dates.courier      !== undefined) clean.courier = dates.courier;
+  await updateDoc(doc(db, COL, id), clean);
+}
+
+export async function updateOrderShipping(
+  id: string,
+  shipping: { phone?: string; courier?: string; trackingNumber?: string; trackingUrl?: string },
+): Promise<void> {
+  const clean: Record<string, unknown> = {};
+  if (shipping.phone          !== undefined) clean.phone = shipping.phone;
+  if (shipping.courier        !== undefined) clean.courier = shipping.courier;
+  if (shipping.trackingNumber !== undefined) clean.trackingNumber = shipping.trackingNumber;
+  if (shipping.trackingUrl    !== undefined) clean.trackingUrl = shipping.trackingUrl;
+  await updateDoc(doc(db, COL, id), clean);
+}
+
 export async function deleteOrder(id: string): Promise<void> {
   await deleteDoc(doc(db, COL, id));
 }
@@ -158,7 +190,7 @@ function csvCell(v: unknown): string {
 
 export function ordersToCsv(orders: Order[]): string {
   const headers = [
-    'Ref', 'Date', 'Source', 'Customer', 'Status', 'Items', 'Pieces',
+    'Ref', 'Created', 'Order Date', 'Delivery Date', 'Source', 'Customer', 'Status', 'Items', 'Pieces',
     'Order Total (Rs)', 'Payment Received (Rs)', 'Payment Ref', 'Payment Note', 'Courier',
   ];
   const rows = orders.map((o) => {
@@ -174,6 +206,8 @@ export function ordersToCsv(orders: Order[]): string {
     return [
       o.ref,
       o.createdAt ? o.createdAt.toLocaleString('en-IN') : '',
+      o.orderDate ?? '',
+      o.deliveryDate ?? '',
       o.source,
       o.customerName,
       o.status,

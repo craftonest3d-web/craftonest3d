@@ -29,11 +29,13 @@ service cloud.firestore {
     }
 
     // ── ORDERS ───────────────────────────────────────────────────────────
-    // Customers may CREATE an order from the shop (no auth), but can never
-    // read, list, edit or delete orders. Only the authenticated admin can.
+    // Public (shop customers) may create an order only with status 'pending'.
+    // The authenticated admin may create with ANY status (e.g. offline orders),
+    // and is the only one who can read, update or delete.
     match /orders/{docId} {
-      allow create: if request.resource.data.keys().hasAll(['ref', 'items', 'status'])
-                    && request.resource.data.status == 'pending';
+      allow create: if request.auth != null
+                    || (request.resource.data.keys().hasAll(['ref', 'items', 'status'])
+                        && request.resource.data.status == 'pending');
       allow read, update, delete: if request.auth != null;
     }
 
